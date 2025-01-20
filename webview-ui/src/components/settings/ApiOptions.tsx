@@ -38,14 +38,24 @@ import OpenRouterModelPicker, {
 } from "./OpenRouterModelPicker"
 import OpenAiModelPicker from "./OpenAiModelPicker"
 import GlamaModelPicker from "./GlamaModelPicker"
+import { ValidationResult } from "../../../../src/shared/validation"
 
 interface ApiOptionsProps {
+	apiConfiguration: ApiConfiguration
+	onUpdateConfig: (config: ApiConfiguration) => void
+	validationResult?: ValidationResult
 	apiErrorMessage?: string
 	modelIdErrorMessage?: string
 }
 
-const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage }: ApiOptionsProps) => {
-	const { apiConfiguration, setApiConfiguration, uriScheme, onUpdateApiConfig } = useExtensionState()
+export const ApiOptions: React.FC<ApiOptionsProps> = ({
+	apiConfiguration,
+	onUpdateConfig,
+	validationResult,
+	apiErrorMessage,
+	modelIdErrorMessage,
+}) => {
+	const { setApiConfiguration, uriScheme } = useExtensionState()
 	const [ollamaModels, setOllamaModels] = useState<string[]>([])
 	const [lmStudioModels, setLmStudioModels] = useState<string[]>([])
 	const [vsCodeLmModels, setVsCodeLmModels] = useState<vscodemodels.LanguageModelChatSelector[]>([])
@@ -55,7 +65,7 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage }: ApiOptionsProps) =
 
 	const handleInputChange = (field: keyof ApiConfiguration) => (event: any) => {
 		const apiConfig = { ...apiConfiguration, [field]: event.target.value }
-		onUpdateApiConfig(apiConfig)
+		onUpdateConfig(apiConfig)
 		setApiConfiguration(apiConfig)
 	}
 
@@ -121,6 +131,22 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage }: ApiOptionsProps) =
 		)
 	}
 
+	const showError = (message?: string) => {
+		if (!message) return null
+		return (
+			<div style={{ color: "var(--vscode-errorForeground)", fontSize: "12px", marginTop: "4px" }}>{message}</div>
+		)
+	}
+
+	const showValidationErrors = () => {
+		if (!validationResult || validationResult.isValid) return null
+		return validationResult.errors.map((error, index) => (
+			<div key={index} style={{ color: "var(--vscode-errorForeground)", fontSize: "12px", marginTop: "4px" }}>
+				{error}
+			</div>
+		))
+	}
+
 	return (
 		<div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
 			<div className="dropdown-container">
@@ -154,6 +180,8 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage }: ApiOptionsProps) =
 						{ value: "ollama", label: "Ollama" },
 					]}
 				/>
+				{showError(apiErrorMessage)}
+				{showValidationErrors()}
 			</div>
 
 			{selectedProvider === "anthropic" && (
@@ -793,16 +821,19 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage }: ApiOptionsProps) =
 				</div>
 			)}
 
-			{apiErrorMessage && (
-				<p
-					style={{
-						margin: "-10px 0 4px 0",
-						fontSize: 12,
-						color: "var(--vscode-errorForeground)",
-					}}>
-					{apiErrorMessage}
-				</p>
-			)}
+			<div style={{ marginBottom: 15 }}>
+				<label style={{ fontWeight: "500", display: "block", marginBottom: 5 }}>Model ID</label>
+				<VSCodeTextField
+					value={selectedModelId || ""}
+					onInput={(e: any) => {
+						handleInputChange("apiModelId")({
+							target: { value: e.target.value },
+						})
+					}}
+					style={{ width: "100%" }}
+				/>
+				{showError(modelIdErrorMessage)}
+			</div>
 
 			{selectedProvider === "glama" && <GlamaModelPicker />}
 
@@ -836,16 +867,7 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage }: ApiOptionsProps) =
 					</>
 				)}
 
-			{modelIdErrorMessage && (
-				<p
-					style={{
-						margin: "-10px 0 4px 0",
-						fontSize: 12,
-						color: "var(--vscode-errorForeground)",
-					}}>
-					{modelIdErrorMessage}
-				</p>
-			)}
+			{showValidationErrors()}
 		</div>
 	)
 }

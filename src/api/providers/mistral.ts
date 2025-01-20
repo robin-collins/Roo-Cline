@@ -60,15 +60,15 @@ export class MistralHandler implements ApiHandler {
 		}
 	}
 
-	getModel(): { id: MistralModelId; info: ModelInfo } {
-		const modelId = this.options.apiModelId
-		if (modelId && modelId in mistralModels) {
-			const id = modelId as MistralModelId
-			return { id, info: mistralModels[id] }
-		}
-		return {
-			id: mistralDefaultModelId,
-			info: mistralModels[mistralDefaultModelId],
-		}
+	getModel(modelId?: string): Promise<ModelInfo> {
+		const model =
+			modelId && modelId in mistralModels
+				? { id: modelId as MistralModelId, info: mistralModels[modelId as MistralModelId] }
+				: { id: mistralDefaultModelId, info: mistralModels[mistralDefaultModelId] }
+		return Promise.resolve(model.info)
+	}
+
+	async getModels(): Promise<string[]> {
+		return Object.keys(mistralModels)
 	}
 }

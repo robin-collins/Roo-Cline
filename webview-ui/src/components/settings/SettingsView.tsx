@@ -13,6 +13,7 @@ import ApiOptions from "./ApiOptions"
 import McpEnabledToggle from "../mcp/McpEnabledToggle"
 import ApiConfigManager from "./ApiConfigManager"
 import { Mode } from "../../../../src/shared/modes"
+import { validateProfileSettings } from "../../../../src/shared/validation"
 
 const IS_DEV = false // FIXME: use flags when packaging
 
@@ -69,22 +70,37 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 		setMode,
 		experimentalDiffStrategy,
 		setExperimentalDiffStrategy,
+		onUpdateApiConfig,
+		onSaveApiConfig,
+		onDeleteApiConfig,
+		onRenameApiConfig,
+		onSelectApiConfig,
 	} = useExtensionState()
-	const [apiErrorMessage, setApiErrorMessage] = useState<string | undefined>(undefined)
-	const [modelIdErrorMessage, setModelIdErrorMessage] = useState<string | undefined>(undefined)
+	const [validationResult, setValidationResult] = useState<ValidationResult>({ isValid: true, errors: [] })
+	const [apiErrorMessage, setApiErrorMessage] = useState<string>()
+	const [modelIdErrorMessage, setModelIdErrorMessage] = useState<string>()
 	const [commandInput, setCommandInput] = useState("")
 
 	const handleSubmit = () => {
 		const apiValidationResult = validateApiConfiguration(apiConfiguration)
 		const modelIdValidationResult = validateModelId(apiConfiguration, glamaModels, openRouterModels)
+		const profileValidationResult = validateProfileSettings(apiConfiguration)
 
 		setApiErrorMessage(apiValidationResult)
 		setModelIdErrorMessage(modelIdValidationResult)
-		if (!apiValidationResult && !modelIdValidationResult) {
-			vscode.postMessage({
-				type: "apiConfiguration",
-				apiConfiguration,
-			})
+		setValidationResult(profileValidationResult)
+
+		if (!apiValidationResult && !modelIdValidationResult && profileValidationResult.isValid) {
+			// Save current profile first
+			if (currentApiConfigName) {
+				vscode.postMessage({
+					type: "saveApiConfiguration",
+					values: { name: currentApiConfigName },
+					apiConfiguration,
+				})
+			}
+
+			// Update global settings
 			vscode.postMessage({ type: "customInstructions", text: customInstructions })
 			vscode.postMessage({ type: "alwaysAllowReadOnly", bool: alwaysAllowReadOnly })
 			vscode.postMessage({ type: "alwaysAllowWrite", bool: alwaysAllowWrite })
@@ -104,12 +120,6 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 			vscode.postMessage({ type: "mcpEnabled", bool: mcpEnabled })
 			vscode.postMessage({ type: "alwaysApproveResubmit", bool: alwaysApproveResubmit })
 			vscode.postMessage({ type: "requestDelaySeconds", value: requestDelaySeconds })
-			vscode.postMessage({ type: "currentApiConfigName", text: currentApiConfigName })
-			vscode.postMessage({
-				type: "upsertApiConfiguration",
-				text: currentApiConfigName,
-				apiConfiguration,
-			})
 			vscode.postMessage({ type: "mode", text: mode })
 			vscode.postMessage({ type: "experimentalDiffStrategy", bool: experimentalDiffStrategy })
 			onDone()
@@ -119,14 +129,17 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 	useEffect(() => {
 		setApiErrorMessage(undefined)
 		setModelIdErrorMessage(undefined)
+		setValidationResult({ isValid: true, errors: [] })
 	}, [apiConfiguration])
 
 	// Initial validation on mount
 	useEffect(() => {
 		const apiValidationResult = validateApiConfiguration(apiConfiguration)
 		const modelIdValidationResult = validateModelId(apiConfiguration, glamaModels, openRouterModels)
+		const profileValidationResult = validateProfileSettings(apiConfiguration)
 		setApiErrorMessage(apiValidationResult)
 		setModelIdErrorMessage(modelIdValidationResult)
+		setValidationResult(profileValidationResult)
 	}, [apiConfiguration, glamaModels, openRouterModels])
 
 	const handleResetState = () => {
@@ -143,6 +156,22 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 				type: "allowedCommands",
 				commands: newCommands,
 			})
+		}
+	}
+
+	const handleUpdateConfig = async (config: ApiConfiguration) => {
+		const validation = await validateProfileSettings(config)
+		setValidationResult(validation)
+		if (validation.isValid) {
+			onUpdateApiConfig(config)
+		}
+	}
+
+	const handleSaveConfig = async (name: string) => {
+		const validation = await validateProfileSettings(apiConfiguration)
+		setValidationResult(validation)
+		if (validation.isValid) {
+			onSaveApiConfig(name, apiConfiguration)
 		}
 	}
 
@@ -179,34 +208,18 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 					<ApiConfigManager
 						currentApiConfigName={currentApiConfigName}
 						listApiConfigMeta={listApiConfigMeta}
-						onSelectConfig={(configName: string) => {
-							vscode.postMessage({
-								type: "loadApiConfiguration",
-								text: configName,
-							})
-						}}
-						onDeleteConfig={(configName: string) => {
-							vscode.postMessage({
-								type: "deleteApiConfiguration",
-								text: configName,
-							})
-						}}
-						onRenameConfig={(oldName: string, newName: string) => {
-							vscode.postMessage({
-								type: "renameApiConfiguration",
-								values: { oldName, newName },
-								apiConfiguration,
-							})
-						}}
-						onUpsertConfig={(configName: string) => {
-							vscode.postMessage({
-								type: "upsertApiConfiguration",
-								text: configName,
-								apiConfiguration,
-							})
-						}}
+						apiConfiguration={apiConfiguration}
+						onSelectConfig={onSelectApiConfig}
+						onDeleteConfig={onDeleteApiConfig}
+						onRenameConfig={onRenameApiConfig}
+						onUpdateConfig={handleUpdateConfig}
+						onSaveConfig={handleSaveConfig}
 					/>
-					<ApiOptions apiErrorMessage={apiErrorMessage} modelIdErrorMessage={modelIdErrorMessage} />
+					<ApiOptions
+						apiErrorMessage={apiErrorMessage}
+						modelIdErrorMessage={modelIdErrorMessage}
+						validationResult={validationResult}
+					/>
 				</div>
 
 				<div style={{ marginBottom: 5 }}>

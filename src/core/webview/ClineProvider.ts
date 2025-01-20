@@ -2,34 +2,32 @@ import { Anthropic } from "@anthropic-ai/sdk"
 import axios from "axios"
 import fs from "fs/promises"
 import os from "os"
+import path from "path"
 import pWaitFor from "p-wait-for"
-import * as path from "path"
 import * as vscode from "vscode"
 import { buildApiHandler } from "../../api"
 import { downloadTask } from "../../integrations/misc/export-markdown"
 import { openFile, openImage } from "../../integrations/misc/open-file"
 import { selectImages } from "../../integrations/misc/process-images"
 import { getTheme } from "../../integrations/theme/getTheme"
-import WorkspaceTracker from "../../integrations/workspace/WorkspaceTracker"
-import { McpHub } from "../../services/mcp/McpHub"
+import { openMention } from "../../integrations/misc/open-mention"
 import { ApiConfiguration, ApiProvider, ModelInfo } from "../../shared/api"
 import { findLast } from "../../shared/array"
-import { ApiConfigMeta, ExtensionMessage } from "../../shared/ExtensionMessage"
+import { ApiConfigMeta, ExtensionMessage, ExtensionState, ClineMessage } from "../../shared/ExtensionMessage"
 import { HistoryItem } from "../../shared/HistoryItem"
 import { WebviewMessage, PromptMode } from "../../shared/WebviewMessage"
-import { defaultModeSlug, defaultPrompts } from "../../shared/modes"
+import { Mode, modes, CustomPrompts, PromptComponent, enhance, defaultModeSlug } from "../../shared/modes"
 import { SYSTEM_PROMPT, addCustomInstructions } from "../prompts/system"
-import { fileExistsAtPath } from "../../utils/fs"
 import { Cline } from "../Cline"
-import { openMention } from "../mentions"
+import { McpHub } from "../mcp/McpHub"
+import { WorkspaceTracker } from "../WorkspaceTracker"
+import { ConfigManager } from "../config/ConfigManager"
+import { fileExistsAtPath } from "../../utils/fs"
+import { playSound, setSoundEnabled, setSoundVolume } from "../../utils/sound"
+import { enhancePrompt } from "../../utils/enhance-prompt"
+import { searchCommits } from "../../utils/git"
 import { getNonce } from "./getNonce"
 import { getUri } from "./getUri"
-import { playSound, setSoundEnabled, setSoundVolume } from "../../utils/sound"
-import { checkExistKey } from "../../shared/checkExistApiConfig"
-import { enhancePrompt } from "../../utils/enhance-prompt"
-import { getCommitInfo, searchCommits, getWorkingState } from "../../utils/git"
-import { ConfigManager } from "../config/ConfigManager"
-import { Mode, modes, CustomPrompts, PromptComponent, enhance } from "../../shared/modes"
 
 /*
 https://github.com/microsoft/vscode-webview-ui-toolkit-samples/blob/main/default/weather-webview/src/providers/WeatherViewProvider.ts
@@ -401,98 +399,8 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 					case "webviewDidLaunch":
 						this.postStateToWebview()
 						this.workspaceTracker?.initializeFilePaths() // don't await
-						getTheme().then((theme) =>
-							this.postMessageToWebview({ type: "theme", text: JSON.stringify(theme) }),
-						)
-						// post last cached models in case the call to endpoint fails
-						this.readOpenRouterModels().then((openRouterModels) => {
-							if (openRouterModels) {
-								this.postMessageToWebview({ type: "openRouterModels", openRouterModels })
-							}
-						})
-						// gui relies on model info to be up-to-date to provide the most accurate pricing, so we need to fetch the latest details on launch.
-						// we do this for all users since many users switch between api providers and if they were to switch back to openrouter it would be showing outdated model info if we hadn't retrieved the latest at this point
-						// (see normalizeApiConfiguration > openrouter)
-						this.refreshOpenRouterModels().then(async (openRouterModels) => {
-							if (openRouterModels) {
-								// update model info in state (this needs to be done here since we don't want to update state while settings is open, and we may refresh models there)
-								const { apiConfiguration } = await this.getState()
-								if (apiConfiguration.openRouterModelId) {
-									await this.updateGlobalState(
-										"openRouterModelInfo",
-										openRouterModels[apiConfiguration.openRouterModelId],
-									)
-									await this.postStateToWebview()
-								}
-							}
-						})
-						this.readGlamaModels().then((glamaModels) => {
-							if (glamaModels) {
-								this.postMessageToWebview({ type: "glamaModels", glamaModels })
-							}
-						})
-						this.refreshGlamaModels().then(async (glamaModels) => {
-							if (glamaModels) {
-								// update model info in state (this needs to be done here since we don't want to update state while settings is open, and we may refresh models there)
-								const { apiConfiguration } = await this.getState()
-								if (apiConfiguration.glamaModelId) {
-									await this.updateGlobalState(
-										"glamaModelInfo",
-										glamaModels[apiConfiguration.glamaModelId],
-									)
-									await this.postStateToWebview()
-								}
-							}
-						})
-
-						this.configManager
-							.ListConfig()
-							.then(async (listApiConfig) => {
-								if (!listApiConfig) {
-									return
-								}
-
-								if (listApiConfig.length === 1) {
-									// check if first time init then sync with exist config
-									if (!checkExistKey(listApiConfig[0])) {
-										const { apiConfiguration } = await this.getState()
-										await this.configManager.SaveConfig(
-											listApiConfig[0].name ?? "default",
-											apiConfiguration,
-										)
-										listApiConfig[0].apiProvider = apiConfiguration.apiProvider
-									}
-								}
-
-								let currentConfigName = (await this.getGlobalState("currentApiConfigName")) as string
-
-								if (currentConfigName) {
-									if (!(await this.configManager.HasConfig(currentConfigName))) {
-										// current config name not valid, get first config in list
-										await this.updateGlobalState("currentApiConfigName", listApiConfig?.[0]?.name)
-										if (listApiConfig?.[0]?.name) {
-											const apiConfig = await this.configManager.LoadConfig(
-												listApiConfig?.[0]?.name,
-											)
-
-											await Promise.all([
-												this.updateGlobalState("listApiConfigMeta", listApiConfig),
-												this.postMessageToWebview({ type: "listApiConfig", listApiConfig }),
-												this.updateApiConfiguration(apiConfig),
-											])
-											await this.postStateToWebview()
-											return
-										}
-									}
-								}
-
-								await Promise.all([
-									await this.updateGlobalState("listApiConfigMeta", listApiConfig),
-									await this.postMessageToWebview({ type: "listApiConfig", listApiConfig }),
-								])
-							})
-							.catch(console.error)
-
+						const theme = await getTheme()
+						this.postMessageToWebview({ type: "theme", theme })
 						break
 					case "newTask":
 						// Code that should run in response to the hello message command
@@ -506,10 +414,11 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 						await this.initClineWithTask(message.text, message.images)
 						break
 					case "apiConfiguration":
+					case "upsertApiConfiguration":
 						if (message.apiConfiguration) {
 							await this.updateApiConfiguration(message.apiConfiguration)
+							await this.postStateToWebview()
 						}
-						await this.postStateToWebview()
 						break
 					case "customInstructions":
 						await this.updateCustomInstructions(message.text)
@@ -569,16 +478,20 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 						await this.resetState()
 						break
 					case "requestOllamaModels":
-						const ollamaModels = await this.getOllamaModels(message.text)
-						this.postMessageToWebview({ type: "ollamaModels", ollamaModels })
+						if (typeof message.text === "string") {
+							const models = await this.getOllamaModels(message.text)
+							this.postMessageToWebview({ type: "ollamaModels", ollamaModels: models })
+						}
 						break
 					case "requestLmStudioModels":
-						const lmStudioModels = await this.getLmStudioModels(message.text)
-						this.postMessageToWebview({ type: "lmStudioModels", lmStudioModels })
+						if (typeof message.text === "string") {
+							const models = await this.getLmStudioModels(message.text)
+							this.postMessageToWebview({ type: "lmStudioModels", lmStudioModels: models })
+						}
 						break
 					case "requestVsCodeLmModels":
-						const vsCodeLmModels = await this.getVsCodeLmModels()
-						this.postMessageToWebview({ type: "vsCodeLmModels", vsCodeLmModels })
+						const vsCodeModels = await this.getVsCodeLmModels()
+						this.postMessageToWebview({ type: "vsCodeLmModels", text: JSON.stringify(vsCodeModels) })
 						break
 					case "refreshGlamaModels":
 						await this.refreshGlamaModels()
@@ -676,16 +589,16 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 						}
 						break
 					case "soundEnabled":
-						const soundEnabled = message.bool ?? true
-						await this.updateGlobalState("soundEnabled", soundEnabled)
-						setSoundEnabled(soundEnabled) // Add this line to update the sound utility
-						await this.postStateToWebview()
+						if (typeof message.bool === "boolean") {
+							setSoundEnabled(message.bool)
+							await this.updateGlobalState("soundEnabled", message.bool)
+						}
 						break
 					case "soundVolume":
-						const soundVolume = message.value ?? 0.5
-						await this.updateGlobalState("soundVolume", soundVolume)
-						setSoundVolume(soundVolume)
-						await this.postStateToWebview()
+						if (typeof message.number === "number") {
+							setSoundVolume(message.number)
+							await this.updateGlobalState("soundVolume", message.number)
+						}
 						break
 					case "diffEnabled":
 						const diffEnabled = message.bool ?? true
@@ -905,42 +818,17 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 					case "enhancePrompt":
 						if (message.text) {
 							try {
-								const { apiConfiguration, customPrompts, listApiConfigMeta, enhancementApiConfigId } =
-									await this.getState()
-
-								// Try to get enhancement config first, fall back to current config
-								let configToUse: ApiConfiguration = apiConfiguration
-								if (enhancementApiConfigId) {
-									const config = listApiConfigMeta?.find((c) => c.id === enhancementApiConfigId)
-									if (config?.name) {
-										const loadedConfig = await this.configManager.LoadConfig(config.name)
-										if (loadedConfig.apiProvider) {
-											configToUse = loadedConfig
-										}
-									}
-								}
-
-								const getEnhancePrompt = (value: string | PromptComponent | undefined): string => {
-									if (typeof value === "string") {
-										return value
-									}
-									return enhance.prompt // Use the constant from modes.ts which we know is a string
-								}
+								const { apiConfiguration, customPrompts } = await this.getState()
 								const enhancedPrompt = await enhancePrompt(
-									configToUse,
+									apiConfiguration,
 									message.text,
-									getEnhancePrompt(customPrompts?.enhance),
+									typeof customPrompts?.enhance === "string" ? customPrompts.enhance : enhance.prompt,
 								)
-								await this.postMessageToWebview({
-									type: "enhancedPrompt",
-									text: enhancedPrompt,
-								})
+								this.postMessageToWebview({ type: "enhancedPrompt", text: enhancedPrompt })
 							} catch (error) {
 								console.error("Error enhancing prompt:", error)
 								vscode.window.showErrorMessage("Failed to enhance prompt")
-								await this.postMessageToWebview({
-									type: "enhancedPrompt",
-								})
+								this.postMessageToWebview({ type: "enhancedPrompt", text: "" })
 							}
 						}
 						break
@@ -985,62 +873,27 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 							vscode.window.showErrorMessage("Failed to get system prompt")
 						}
 						break
-					case "searchCommits": {
-						const cwd = vscode.workspace.workspaceFolders?.map((folder) => folder.uri.fsPath).at(0)
-						if (cwd) {
+					case "searchCommits":
+						if (message.text) {
 							try {
-								const commits = await searchCommits(message.query || "", cwd)
-								await this.postMessageToWebview({
-									type: "commitSearchResults",
-									commits,
-								})
+								const cwd = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
+								if (cwd) {
+									const commits = await searchCommits(message.text, cwd)
+									this.postMessageToWebview({ type: "commitSearchResults", commits })
+								}
 							} catch (error) {
 								console.error("Error searching commits:", error)
 								vscode.window.showErrorMessage("Failed to search commits")
 							}
 						}
 						break
-					}
-					case "upsertApiConfiguration":
-						if (message.text && message.apiConfiguration) {
-							try {
-								await this.configManager.SaveConfig(message.text, message.apiConfiguration)
-								let listApiConfig = await this.configManager.ListConfig()
-
-								await Promise.all([
-									this.updateGlobalState("listApiConfigMeta", listApiConfig),
-									this.updateApiConfiguration(message.apiConfiguration),
-									this.updateGlobalState("currentApiConfigName", message.text),
-								])
-
-								await this.postStateToWebview()
-							} catch (error) {
-								console.error("Error create new api configuration:", error)
-								vscode.window.showErrorMessage("Failed to create api configuration")
-							}
-						}
-						break
 					case "renameApiConfiguration":
-						if (message.values && message.apiConfiguration) {
-							try {
-								const { oldName, newName } = message.values
-
-								await this.configManager.SaveConfig(newName, message.apiConfiguration)
-								await this.configManager.DeleteConfig(oldName)
-
-								let listApiConfig = await this.configManager.ListConfig()
-								const config = listApiConfig?.find((c) => c.name === newName)
-
-								// Update listApiConfigMeta first to ensure UI has latest data
-								await this.updateGlobalState("listApiConfigMeta", listApiConfig)
-
-								await Promise.all([this.updateGlobalState("currentApiConfigName", newName)])
-
-								await this.postStateToWebview()
-							} catch (error) {
-								console.error("Error create new api configuration:", error)
-								vscode.window.showErrorMessage("Failed to create api configuration")
-							}
+						if (message.values?.oldName && message.values?.newName) {
+							const config = await this.configManager.LoadConfig(message.values.oldName)
+							await this.configManager.SaveConfig(message.values.newName, config)
+							await this.configManager.DeleteConfig(message.values.oldName)
+							await this.updateGlobalState("currentApiConfigName", message.values.newName)
+							await this.postStateToWebview()
 						}
 						break
 					case "loadApiConfiguration":
@@ -1049,11 +902,23 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 								const apiConfig = await this.configManager.LoadConfig(message.text)
 								const listApiConfig = await this.configManager.ListConfig()
 
+								// Update global state first
 								await Promise.all([
 									this.updateGlobalState("listApiConfigMeta", listApiConfig),
 									this.updateGlobalState("currentApiConfigName", message.text),
-									this.updateApiConfiguration(apiConfig),
 								])
+
+								// Update API configuration and profile settings
+								await this.updateApiConfiguration(apiConfig)
+
+								// Update mode's default config
+								const { mode } = await this.getState()
+								if (mode) {
+									const config = listApiConfig?.find((c) => c.name === message.text)
+									if (config?.id) {
+										await this.configManager.SetModeConfig(mode, config.id)
+									}
+								}
 
 								await this.postStateToWebview()
 							} catch (error) {
@@ -1115,6 +980,12 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 							await this.cline.updateDiffStrategy(message.bool ?? false)
 						}
 						await this.postStateToWebview()
+					case "saveApiConfiguration":
+						if (message.apiConfiguration) {
+							await this.updateApiConfiguration(message.apiConfiguration)
+							await this.postStateToWebview()
+						}
+						break
 				}
 			},
 			null,
@@ -1134,72 +1005,49 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			}
 		}
 
-		const {
-			apiProvider,
-			apiModelId,
-			apiKey,
-			glamaModelId,
-			glamaModelInfo,
-			glamaApiKey,
-			openRouterApiKey,
-			awsAccessKey,
-			awsSecretKey,
-			awsSessionToken,
-			awsRegion,
-			awsUseCrossRegionInference,
-			vertexProjectId,
-			vertexRegion,
-			openAiBaseUrl,
-			openAiApiKey,
-			openAiModelId,
-			ollamaModelId,
-			ollamaBaseUrl,
-			lmStudioModelId,
-			lmStudioBaseUrl,
-			anthropicBaseUrl,
-			geminiApiKey,
-			openAiNativeApiKey,
-			deepSeekApiKey,
-			azureApiVersion,
-			openAiStreamingEnabled,
-			openRouterModelId,
-			openRouterModelInfo,
-			openRouterUseMiddleOutTransform,
-			vsCodeLmModelSelector,
-			mistralApiKey,
-		} = apiConfiguration
-		await this.updateGlobalState("apiProvider", apiProvider)
-		await this.updateGlobalState("apiModelId", apiModelId)
-		await this.storeSecret("apiKey", apiKey)
-		await this.updateGlobalState("glamaModelId", glamaModelId)
-		await this.updateGlobalState("glamaModelInfo", glamaModelInfo)
-		await this.storeSecret("glamaApiKey", glamaApiKey)
-		await this.storeSecret("openRouterApiKey", openRouterApiKey)
-		await this.storeSecret("awsAccessKey", awsAccessKey)
-		await this.storeSecret("awsSecretKey", awsSecretKey)
-		await this.storeSecret("awsSessionToken", awsSessionToken)
-		await this.updateGlobalState("awsRegion", awsRegion)
-		await this.updateGlobalState("awsUseCrossRegionInference", awsUseCrossRegionInference)
-		await this.updateGlobalState("vertexProjectId", vertexProjectId)
-		await this.updateGlobalState("vertexRegion", vertexRegion)
-		await this.updateGlobalState("openAiBaseUrl", openAiBaseUrl)
-		await this.storeSecret("openAiApiKey", openAiApiKey)
-		await this.updateGlobalState("openAiModelId", openAiModelId)
-		await this.updateGlobalState("ollamaModelId", ollamaModelId)
-		await this.updateGlobalState("ollamaBaseUrl", ollamaBaseUrl)
-		await this.updateGlobalState("lmStudioModelId", lmStudioModelId)
-		await this.updateGlobalState("lmStudioBaseUrl", lmStudioBaseUrl)
-		await this.updateGlobalState("anthropicBaseUrl", anthropicBaseUrl)
-		await this.storeSecret("geminiApiKey", geminiApiKey)
-		await this.storeSecret("openAiNativeApiKey", openAiNativeApiKey)
-		await this.storeSecret("deepSeekApiKey", deepSeekApiKey)
-		await this.updateGlobalState("azureApiVersion", azureApiVersion)
-		await this.updateGlobalState("openAiStreamingEnabled", openAiStreamingEnabled)
-		await this.updateGlobalState("openRouterModelId", openRouterModelId)
-		await this.updateGlobalState("openRouterModelInfo", openRouterModelInfo)
-		await this.updateGlobalState("openRouterUseMiddleOutTransform", openRouterUseMiddleOutTransform)
-		await this.updateGlobalState("vsCodeLmModelSelector", vsCodeLmModelSelector)
-		await this.storeSecret("mistralApiKey", mistralApiKey)
+		// Extract profile-specific settings
+		const profileSettings = await this.configManager.extractProfileSettings(apiConfiguration)
+
+		// Update global settings
+		await this.updateGlobalState("apiProvider", apiConfiguration.apiProvider)
+		await this.updateGlobalState("apiModelId", apiConfiguration.apiModelId)
+		await this.updateGlobalState("glamaModelId", apiConfiguration.glamaModelId)
+		await this.updateGlobalState("glamaModelInfo", apiConfiguration.glamaModelInfo)
+		await this.updateGlobalState("awsRegion", apiConfiguration.awsRegion)
+		await this.updateGlobalState("awsUseCrossRegionInference", apiConfiguration.awsUseCrossRegionInference)
+		await this.updateGlobalState("vertexProjectId", apiConfiguration.vertexProjectId)
+		await this.updateGlobalState("vertexRegion", apiConfiguration.vertexRegion)
+		await this.updateGlobalState("openAiBaseUrl", apiConfiguration.openAiBaseUrl)
+		await this.updateGlobalState("openAiModelId", apiConfiguration.openAiModelId)
+		await this.updateGlobalState("ollamaModelId", apiConfiguration.ollamaModelId)
+		await this.updateGlobalState("ollamaBaseUrl", apiConfiguration.ollamaBaseUrl)
+		await this.updateGlobalState("lmStudioModelId", apiConfiguration.lmStudioModelId)
+		await this.updateGlobalState("lmStudioBaseUrl", apiConfiguration.lmStudioBaseUrl)
+		await this.updateGlobalState("anthropicBaseUrl", apiConfiguration.anthropicBaseUrl)
+		await this.updateGlobalState("azureApiVersion", apiConfiguration.azureApiVersion)
+		await this.updateGlobalState("openAiStreamingEnabled", apiConfiguration.openAiStreamingEnabled)
+		await this.updateGlobalState("openRouterModelId", apiConfiguration.openRouterModelId)
+		await this.updateGlobalState("openRouterModelInfo", apiConfiguration.openRouterModelInfo)
+		await this.updateGlobalState(
+			"openRouterUseMiddleOutTransform",
+			apiConfiguration.openRouterUseMiddleOutTransform,
+		)
+		await this.updateGlobalState("vsCodeLmModelSelector", apiConfiguration.vsCodeLmModelSelector)
+
+		// Update secrets
+		await this.storeSecret("apiKey", apiConfiguration.apiKey)
+		await this.storeSecret("glamaApiKey", apiConfiguration.glamaApiKey)
+		await this.storeSecret("openRouterApiKey", apiConfiguration.openRouterApiKey)
+		await this.storeSecret("awsAccessKey", apiConfiguration.awsAccessKey)
+		await this.storeSecret("awsSecretKey", apiConfiguration.awsSecretKey)
+		await this.storeSecret("awsSessionToken", apiConfiguration.awsSessionToken)
+		await this.storeSecret("openAiApiKey", apiConfiguration.openAiApiKey)
+		await this.storeSecret("geminiApiKey", apiConfiguration.geminiApiKey)
+		await this.storeSecret("openAiNativeApiKey", apiConfiguration.openAiNativeApiKey)
+		await this.storeSecret("deepSeekApiKey", apiConfiguration.deepSeekApiKey)
+		await this.storeSecret("mistralApiKey", apiConfiguration.mistralApiKey)
+
+		// Update Cline instance if it exists
 		if (this.cline) {
 			this.cline.api = buildApiHandler(apiConfiguration)
 		}
@@ -1283,26 +1131,16 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 
 	// OpenAi
 
-	async getOpenAiModels(baseUrl?: string, apiKey?: string) {
+	private async getOpenAiModels(baseUrl?: string, apiKey?: string): Promise<string[]> {
 		try {
-			if (!baseUrl) {
-				return []
-			}
-
-			if (!URL.canParse(baseUrl)) {
-				return []
-			}
-
-			const config: Record<string, any> = {}
-			if (apiKey) {
-				config["headers"] = { Authorization: `Bearer ${apiKey}` }
-			}
-
-			const response = await axios.get(`${baseUrl}/models`, config)
-			const modelsArray = response.data?.data?.map((model: any) => model.id) || []
-			const models = [...new Set<string>(modelsArray)]
+			const api = buildApiHandler(
+				{ apiProvider: "openai", openAiBaseUrl: baseUrl, openAiApiKey: apiKey },
+				this.context,
+			)
+			const models = await api.getModels()
 			return models
 		} catch (error) {
+			console.error("Error getting OpenAI models:", error)
 			return []
 		}
 	}
@@ -1324,13 +1162,22 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 		}
 
 		const openrouter: ApiProvider = "openrouter"
+		const apiConfiguration: ApiConfiguration = {
+			apiProvider: openrouter,
+			openRouterApiKey: apiKey,
+		}
+
+		// Save the configuration
+		await this.configManager.SaveConfig("default", apiConfiguration)
+
+		// Update global state
 		await this.updateGlobalState("apiProvider", openrouter)
 		await this.storeSecret("openRouterApiKey", apiKey)
 		await this.postStateToWebview()
+
 		if (this.cline) {
-			this.cline.api = buildApiHandler({ apiProvider: openrouter, openRouterApiKey: apiKey })
+			this.cline.api = buildApiHandler(apiConfiguration)
 		}
-		// await this.postMessageToWebview({ type: "action", action: "settingsButtonClicked" }) // bad ux if user is on welcome
 	}
 
 	private async ensureCacheDirectoryExists(): Promise<string> {
@@ -1354,16 +1201,23 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 		}
 
 		const glama: ApiProvider = "glama"
+		const apiConfiguration: ApiConfiguration = {
+			apiProvider: glama,
+			glamaApiKey: apiKey,
+		}
+
+		// Save the configuration
+		await this.configManager.SaveConfig("default", apiConfiguration)
+
+		// Update global state
 		await this.updateGlobalState("apiProvider", glama)
 		await this.storeSecret("glamaApiKey", apiKey)
+
 		await this.postStateToWebview()
+
 		if (this.cline) {
-			this.cline.api = buildApiHandler({
-				apiProvider: glama,
-				glamaApiKey: apiKey,
-			})
+			this.cline.api = buildApiHandler(apiConfiguration)
 		}
-		// await this.postMessageToWebview({ type: "action", action: "settingsButtonClicked" }) // bad ux if user is on welcome
 	}
 
 	async readGlamaModels(): Promise<Record<string, ModelInfo> | undefined> {
@@ -1922,41 +1776,55 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			}
 		}
 
+		// Get current profile settings
+		let currentProfile = undefined
+		if (currentApiConfigName) {
+			try {
+				currentProfile = await this.configManager.LoadConfig(currentApiConfigName)
+			} catch (error) {
+				console.error("Error loading current profile:", error)
+			}
+		}
+
+		// Merge profile settings with global settings
+		const apiConfiguration = {
+			apiProvider,
+			apiModelId,
+			apiKey,
+			glamaApiKey,
+			glamaModelId,
+			glamaModelInfo,
+			openRouterApiKey,
+			awsAccessKey,
+			awsSecretKey,
+			awsSessionToken,
+			awsRegion,
+			awsUseCrossRegionInference,
+			vertexProjectId,
+			vertexRegion,
+			openAiBaseUrl,
+			openAiApiKey,
+			openAiModelId,
+			ollamaModelId,
+			ollamaBaseUrl,
+			lmStudioModelId,
+			lmStudioBaseUrl,
+			anthropicBaseUrl,
+			geminiApiKey,
+			openAiNativeApiKey,
+			deepSeekApiKey,
+			mistralApiKey,
+			azureApiVersion,
+			openAiStreamingEnabled,
+			openRouterModelId,
+			openRouterModelInfo,
+			openRouterUseMiddleOutTransform,
+			vsCodeLmModelSelector,
+			...currentProfile,
+		}
+
 		return {
-			apiConfiguration: {
-				apiProvider,
-				apiModelId,
-				apiKey,
-				glamaApiKey,
-				glamaModelId,
-				glamaModelInfo,
-				openRouterApiKey,
-				awsAccessKey,
-				awsSecretKey,
-				awsSessionToken,
-				awsRegion,
-				awsUseCrossRegionInference,
-				vertexProjectId,
-				vertexRegion,
-				openAiBaseUrl,
-				openAiApiKey,
-				openAiModelId,
-				ollamaModelId,
-				ollamaBaseUrl,
-				lmStudioModelId,
-				lmStudioBaseUrl,
-				anthropicBaseUrl,
-				geminiApiKey,
-				openAiNativeApiKey,
-				deepSeekApiKey,
-				mistralApiKey,
-				azureApiVersion,
-				openAiStreamingEnabled,
-				openRouterModelId,
-				openRouterModelInfo,
-				openRouterUseMiddleOutTransform,
-				vsCodeLmModelSelector,
-			},
+			apiConfiguration,
 			lastShownAnnouncementId,
 			customInstructions,
 			alwaysAllowReadOnly: alwaysAllowReadOnly ?? false,

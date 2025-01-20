@@ -1,0 +1,1327 @@
+Roo-Cline on  profile-state-update [!?] is 📦 v3.1.6 via  v22.12.0 on ☁️  (us-east-2) took 6s
+❯ npm run compile
+
+> roo-cline@3.1.6 compile
+> npm run check-types && npm run lint && node esbuild.js
+
+
+> roo-cline@3.1.6 check-types
+> tsc --noEmit
+
+src/api/index.ts:55:4 - error TS2322: Type 'MistralHandler' is not assignable to type 'ApiHandler'.
+  The types returned by 'getModel(...)' are incompatible between these types.
+    Type 'Promise<ModelInfo>' is missing the following properties from type '{ id: string; info: ModelInfo; }': id, info
+
+55    return new MistralHandler(options)
+      ~~~~~~
+
+src/api/providers/__tests__/glama.test.ts:215:49 - error TS2345: Argument of type '{ apiModelId: string; glamaModelId: string; glamaApiKey: string; glamaModelInfo: { maxTokens: number; contextWindow: number; supportsImages: boolean; supportsPromptCache: boolean; }; }' is not assignable to parameter of type 'ApiHandlerOptions'.
+  Types of property 'glamaModelInfo' are incompatible.
+    Type '{ maxTokens: number; contextWindow: number; supportsImages: boolean; supportsPromptCache: boolean; }' is missing the following properties from type 'ModelInfo': id, name, provider, inputPrice, outputPrice
+
+215    const nonAnthropicHandler = new GlamaHandler(nonAnthropicOptions)
+                                                    ~~~~~~~~~~~~~~~~~~~
+
+src/api/providers/__tests__/lmstudio.test.ts:73:4 - error TS2353: Object literal may only specify known properties, and 'lmStudioModelId' does not exist in type 'ApiHandlerOptions'.
+
+73    lmStudioModelId: "local-model",
+      ~~~~~~~~~~~~~~~
+
+src/api/providers/__tests__/lmstudio.test.ts:83:51 - error TS2339: Property 'lmStudioModelId' does not exist on type 'ApiHandlerOptions'.
+
+83    expect(handler.getModel().id).toBe(mockOptions.lmStudioModelId)
+                                                     ~~~~~~~~~~~~~~~
+
+src/api/providers/__tests__/lmstudio.test.ts:89:5 - error TS2353: Object literal may only specify known properties, and 'lmStudioModelId' does not exist in type 'ApiHandlerOptions'.
+
+89     lmStudioModelId: "local-model",
+       ~~~~~~~~~~~~~~~
+
+src/api/providers/__tests__/lmstudio.test.ts:135:24 - error TS2339: Property 'lmStudioModelId' does not exist on type 'ApiHandlerOptions'.
+
+135     model: mockOptions.lmStudioModelId,
+                           ~~~~~~~~~~~~~~~
+
+src/api/providers/__tests__/lmstudio.test.ts:161:42 - error TS2339: Property 'lmStudioModelId' does not exist on type 'ApiHandlerOptions'.
+
+161    expect(modelInfo.id).toBe(mockOptions.lmStudioModelId)
+                                             ~~~~~~~~~~~~~~~
+
+src/api/providers/__tests__/ollama.test.ts:73:4 - error TS2561: Object literal may only specify known properties, but 'ollamaModelId' does not exist in type 'ApiHandlerOptions'. Did you mean to write 'glamaModelId'?
+
+73    ollamaModelId: "llama2",
+      ~~~~~~~~~~~~~
+
+src/api/providers/__tests__/ollama.test.ts:83:51 - error TS2551: Property 'ollamaModelId' does not exist on type 'ApiHandlerOptions'. Did you mean 'glamaModelId'?
+
+83    expect(handler.getModel().id).toBe(mockOptions.ollamaModelId)
+                                                     ~~~~~~~~~~~~~
+
+  src/shared/api.ts:23:2
+    23  glamaModelId?: string
+        ~~~~~~~~~~~~
+    'glamaModelId' is declared here.
+
+src/api/providers/__tests__/ollama.test.ts:89:5 - error TS2561: Object literal may only specify known properties, but 'ollamaModelId' does not exist in type 'ApiHandlerOptions'. Did you mean to write 'glamaModelId'?
+
+89     ollamaModelId: "llama2",
+       ~~~~~~~~~~~~~
+
+src/api/providers/__tests__/ollama.test.ts:135:24 - error TS2551: Property 'ollamaModelId' does not exist on type 'ApiHandlerOptions'. Did you mean 'glamaModelId'?
+
+135     model: mockOptions.ollamaModelId,
+                           ~~~~~~~~~~~~~
+
+  src/shared/api.ts:23:2
+    23  glamaModelId?: string
+        ~~~~~~~~~~~~
+    'glamaModelId' is declared here.
+
+src/api/providers/__tests__/ollama.test.ts:159:42 - error TS2551: Property 'ollamaModelId' does not exist on type 'ApiHandlerOptions'. Did you mean 'glamaModelId'?
+
+159    expect(modelInfo.id).toBe(mockOptions.ollamaModelId)
+                                             ~~~~~~~~~~~~~
+
+  src/shared/api.ts:23:2
+    23  glamaModelId?: string
+        ~~~~~~~~~~~~
+    'glamaModelId' is declared here.
+
+src/api/providers/anthropic.ts:172:17 - error TS2322: Type '{ readonly id: "claude-3-5-sonnet-20241022"; readonly name: "Claude 3.5 Sonnet"; readonly provider: "anthropic"; readonly maxTokens: 8192; readonly contextWindow: 200000; readonly supportsImages: true; ... 5 more ...; readonly cacheReadsPrice: 0.3; } | { ...; } | { ...; } | { ...; }' is not assignable to type 'ModelInfo'.
+  Type '{ readonly maxTokens: 4096; readonly contextWindow: 200000; readonly supportsImages: true; readonly supportsPromptCache: true; readonly inputPrice: 15; readonly outputPrice: 75; readonly cacheWritesPrice: 18.75; readonly cacheReadsPrice: 1.5; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+172    return { id, info: anthropicModels[id] }
+                    ~~~~
+
+  src/api/providers/anthropic.ts:168:38
+    168  getModel(): { id: AnthropicModelId; info: ModelInfo } {
+                                             ~~~~
+    The expected type comes from property 'info' which is declared here on type '{ id: "claude-3-5-sonnet-20241022" | "claude-3-5-haiku-20241022" | "claude-3-opus-20240229" | "claude-3-haiku-20240307"; info: ModelInfo; }'
+
+src/api/providers/anthropic.ts:174:41 - error TS2322: Type '{ readonly id: "claude-3-5-sonnet-20241022"; readonly name: "Claude 3.5 Sonnet"; readonly provider: "anthropic"; readonly maxTokens: 8192; readonly contextWindow: 200000; readonly supportsImages: true; ... 5 more ...; readonly cacheReadsPrice: 0.3; } | { ...; } | { ...; } | { ...; }' is not assignable to type 'ModelInfo'.
+  Type '{ readonly maxTokens: 4096; readonly contextWindow: 200000; readonly supportsImages: true; readonly supportsPromptCache: true; readonly inputPrice: 15; readonly outputPrice: 75; readonly cacheWritesPrice: 18.75; readonly cacheReadsPrice: 1.5; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+174   return { id: anthropicDefaultModelId, info: anthropicModels[anthropicDefaultModelId] }
+                                            ~~~~
+
+  src/api/providers/anthropic.ts:168:38
+    168  getModel(): { id: AnthropicModelId; info: ModelInfo } {
+                                             ~~~~
+    The expected type comes from property 'info' which is declared here on type '{ id: "claude-3-5-sonnet-20241022" | "claude-3-5-haiku-20241022" | "claude-3-opus-20240229" | "claude-3-haiku-20240307"; info: ModelInfo; }'
+
+src/api/providers/bedrock.ts:208:6 - error TS2740: Type '{ maxTokens: number; contextWindow: number; supportsPromptCache: false; }' is missing the following properties from type 'ModelInfo': id, name, provider, supportsImages, and 2 more.
+
+208      info: {
+         ~~~~
+
+  src/api/providers/bedrock.ts:201:45
+    201  getModel(): { id: BedrockModelId | string; info: ModelInfo } {
+                                                    ~~~~
+    The expected type comes from property 'info' which is declared here on type '{ id: string; info: ModelInfo; }'
+
+src/api/providers/bedrock.ts:218:18 - error TS2322: Type '{ readonly maxTokens: 5000; readonly contextWindow: 300000; readonly supportsImages: true; readonly supportsComputerUse: false; readonly supportsPromptCache: false; readonly inputPrice: 0.8; readonly outputPrice: 3.2; readonly cacheWritesPrice: 0.8; readonly cacheReadsPrice: 0.2; } | ... 16 more ... | { ...; }' is not assignable to type 'ModelInfo'.
+  Type '{ readonly maxTokens: 5000; readonly contextWindow: 300000; readonly supportsImages: true; readonly supportsComputerUse: false; readonly supportsPromptCache: false; readonly inputPrice: 0.8; readonly outputPrice: 3.2; readonly cacheWritesPrice: 0.8; readonly cacheReadsPrice: 0.2; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+218     return { id, info: bedrockModels[id] }
+                     ~~~~
+
+  src/api/providers/bedrock.ts:201:45
+    201  getModel(): { id: BedrockModelId | string; info: ModelInfo } {
+                                                    ~~~~
+    The expected type comes from property 'info' which is declared here on type '{ id: string; info: ModelInfo; }'
+
+src/api/providers/bedrock.ts:223:4 - error TS2322: Type '{ readonly maxTokens: 5000; readonly contextWindow: 300000; readonly supportsImages: true; readonly supportsComputerUse: false; readonly supportsPromptCache: false; readonly inputPrice: 0.8; readonly outputPrice: 3.2; readonly cacheWritesPrice: 0.8; readonly cacheReadsPrice: 0.2; } | ... 16 more ... | { ...; }' is not assignable to type 'ModelInfo'.
+  Type '{ readonly maxTokens: 5000; readonly contextWindow: 300000; readonly supportsImages: true; readonly supportsComputerUse: false; readonly supportsPromptCache: false; readonly inputPrice: 0.8; readonly outputPrice: 3.2; readonly cacheWritesPrice: 0.8; readonly cacheReadsPrice: 0.2; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+223    info: bedrockModels[bedrockDefaultModelId],
+       ~~~~
+
+  src/api/providers/bedrock.ts:201:45
+    201  getModel(): { id: BedrockModelId | string; info: ModelInfo } {
+                                                    ~~~~
+    The expected type comes from property 'info' which is declared here on type '{ id: string; info: ModelInfo; }'
+
+src/api/providers/gemini.ts:52:17 - error TS2322: Type '{ readonly id: "gemini-2.0-flash-thinking-exp-1219"; readonly name: "Gemini 2.0 Flash Thinking"; readonly provider: "gemini"; readonly maxTokens: 8192; readonly contextWindow: 32767; ... 4 more ...; readonly outputPrice: 0; } | ... 6 more ... | { ...; }' is not assignable to type 'ModelInfo'.
+  Type '{ readonly maxTokens: 8192; readonly contextWindow: 1048576; readonly supportsImages: true; readonly supportsPromptCache: false; readonly inputPrice: 0; readonly outputPrice: 0; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+52    return { id, info: geminiModels[id] }
+                   ~~~~
+
+  src/api/providers/gemini.ts:48:35
+    48  getModel(): { id: GeminiModelId; info: ModelInfo } {
+                                         ~~~~
+    The expected type comes from property 'info' which is declared here on type '{ id: "gemini-2.0-flash-thinking-exp-1219" | "gemini-2.0-flash-exp" | "gemini-1.5-flash-002" | "gemini-1.5-flash-exp-0827" | "gemini-1.5-flash-8b-exp-0827" | "gemini-1.5-pro-002" | "gemini-1.5-pro-exp-0827" | "gemini-exp-1206"; info: ModelInfo; }'
+
+src/api/providers/gemini.ts:54:38 - error TS2322: Type '{ readonly id: "gemini-2.0-flash-thinking-exp-1219"; readonly name: "Gemini 2.0 Flash Thinking"; readonly provider: "gemini"; readonly maxTokens: 8192; readonly contextWindow: 32767; ... 4 more ...; readonly outputPrice: 0; } | ... 6 more ... | { ...; }' is not assignable to type 'ModelInfo'.
+  Type '{ readonly maxTokens: 8192; readonly contextWindow: 1048576; readonly supportsImages: true; readonly supportsPromptCache: false; readonly inputPrice: 0; readonly outputPrice: 0; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+54   return { id: geminiDefaultModelId, info: geminiModels[geminiDefaultModelId] }
+                                        ~~~~
+
+  src/api/providers/gemini.ts:48:35
+    48  getModel(): { id: GeminiModelId; info: ModelInfo } {
+                                         ~~~~
+    The expected type comes from property 'info' which is declared here on type '{ id: "gemini-2.0-flash-thinking-exp-1219" | "gemini-2.0-flash-exp" | "gemini-1.5-flash-002" | "gemini-1.5-flash-exp-0827" | "gemini-1.5-flash-8b-exp-0827" | "gemini-1.5-pro-002" | "gemini-1.5-pro-exp-0827" | "gemini-exp-1206"; info: ModelInfo; }'
+
+src/api/providers/lmstudio.ts:52:21 - error TS2339: Property 'lmStudioModelId' does not exist on type 'ApiHandlerOptions'.
+
+52    id: this.options.lmStudioModelId || "",
+                       ~~~~~~~~~~~~~~~
+
+src/api/providers/mistral.ts:31:27 - error TS2339: Property 'id' does not exist on type 'Promise<ModelInfo>'.
+
+31    model: this.getModel().id,
+                             ~~
+
+  src/api/providers/mistral.ts:31:27
+    31    model: this.getModel().id,
+                                 ~~
+    Did you forget to use 'await'?
+
+src/api/providers/mistral.ts:63:2 - error TS2416: Property 'getModel' in type 'MistralHandler' is not assignable to the same property in base type 'ApiHandler'.
+  Type '(modelId?: string | undefined) => Promise<ModelInfo>' is not assignable to type '() => { id: string; info: ModelInfo; }'.
+    Type 'Promise<ModelInfo>' is missing the following properties from type '{ id: string; info: ModelInfo; }': id, info
+
+63  getModel(modelId?: string): Promise<ModelInfo> {
+    ~~~~~~~~
+
+src/api/providers/ollama.ts:45:21 - error TS2551: Property 'ollamaModelId' does not exist on type 'ApiHandlerOptions'. Did you mean 'glamaModelId'?
+
+45    id: this.options.ollamaModelId || "",
+                       ~~~~~~~~~~~~~
+
+  src/shared/api.ts:23:2
+    23  glamaModelId?: string
+        ~~~~~~~~~~~~
+    'glamaModelId' is declared here.
+
+src/api/providers/openai-native.ts:87:17 - error TS2322: Type '{ readonly maxTokens: 100000; readonly contextWindow: 200000; readonly supportsImages: true; readonly supportsPromptCache: false; readonly inputPrice: 15; readonly outputPrice: 60; } | { ...; } | { ...; } | { ...; } | { ...; }' is not assignable to type 'ModelInfo'.
+  Type '{ readonly maxTokens: 100000; readonly contextWindow: 200000; readonly supportsImages: true; readonly supportsPromptCache: false; readonly inputPrice: 15; readonly outputPrice: 60; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+87    return { id, info: openAiNativeModels[id] }
+                   ~~~~
+
+  src/api/providers/openai-native.ts:83:41
+    83  getModel(): { id: OpenAiNativeModelId; info: ModelInfo } {
+                                               ~~~~
+    The expected type comes from property 'info' which is declared here on type '{ id: "o1" | "o1-preview" | "o1-mini" | "gpt-4o" | "gpt-4o-mini"; info: ModelInfo; }'
+
+src/api/providers/openai-native.ts:89:44 - error TS2322: Type '{ readonly maxTokens: 100000; readonly contextWindow: 200000; readonly supportsImages: true; readonly supportsPromptCache: false; readonly inputPrice: 15; readonly outputPrice: 60; } | { ...; } | { ...; } | { ...; } | { ...; }' is not assignable to type 'ModelInfo'.
+  Type '{ readonly maxTokens: 100000; readonly contextWindow: 200000; readonly supportsImages: true; readonly supportsPromptCache: false; readonly inputPrice: 15; readonly outputPrice: 60; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+89   return { id: openAiNativeDefaultModelId, info: openAiNativeModels[openAiNativeDefaultModelId] }
+                                              ~~~~
+
+  src/api/providers/openai-native.ts:83:41
+    83  getModel(): { id: OpenAiNativeModelId; info: ModelInfo } {
+                                               ~~~~
+    The expected type comes from property 'info' which is declared here on type '{ id: "o1" | "o1-preview" | "o1-mini" | "gpt-4o" | "gpt-4o-mini"; info: ModelInfo; }'
+
+src/api/providers/vertex.ts:82:17 - error TS2322: Type '{ readonly id: "claude-3-5-sonnet-v2@20241022"; readonly name: "Claude 3.5 Sonnet V2"; readonly provider: "vertex"; readonly maxTokens: 8192; readonly contextWindow: 200000; readonly supportsImages: true; readonly supportsComputerUse: true; readonly supportsPromptCache: false; readonly inputPrice: 3; readonly output...' is not assignable to type 'ModelInfo'.
+  Type '{ readonly maxTokens: 8192; readonly contextWindow: 200000; readonly supportsImages: true; readonly supportsPromptCache: false; readonly inputPrice: 3; readonly outputPrice: 15; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+82    return { id, info: vertexModels[id] }
+                   ~~~~
+
+  src/api/providers/vertex.ts:78:35
+    78  getModel(): { id: VertexModelId; info: ModelInfo } {
+                                         ~~~~
+    The expected type comes from property 'info' which is declared here on type '{ id: "claude-3-5-sonnet-v2@20241022" | "claude-3-5-sonnet@20240620" | "claude-3-5-haiku@20241022" | "claude-3-opus@20240229" | "claude-3-haiku@20240307"; info: ModelInfo; }'
+
+src/api/providers/vertex.ts:84:38 - error TS2322: Type '{ readonly id: "claude-3-5-sonnet-v2@20241022"; readonly name: "Claude 3.5 Sonnet V2"; readonly provider: "vertex"; readonly maxTokens: 8192; readonly contextWindow: 200000; readonly supportsImages: true; readonly supportsComputerUse: true; readonly supportsPromptCache: false; readonly inputPrice: 3; readonly output...' is not assignable to type 'ModelInfo'.
+  Type '{ readonly maxTokens: 8192; readonly contextWindow: 200000; readonly supportsImages: true; readonly supportsPromptCache: false; readonly inputPrice: 3; readonly outputPrice: 15; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+84   return { id: vertexDefaultModelId, info: vertexModels[vertexDefaultModelId] }
+                                        ~~~~
+
+  src/api/providers/vertex.ts:78:35
+    78  getModel(): { id: VertexModelId; info: ModelInfo } {
+                                         ~~~~
+    The expected type comes from property 'info' which is declared here on type '{ id: "claude-3-5-sonnet-v2@20241022" | "claude-3-5-sonnet@20240620" | "claude-3-5-haiku@20241022" | "claude-3-opus@20240229" | "claude-3-haiku@20240307"; info: ModelInfo; }'
+
+src/api/providers/vscode-lm.ts:493:10 - error TS2739: Type '{ maxTokens: number; contextWindow: number; supportsImages: false; supportsPromptCache: true; inputPrice: number; outputPrice: number; description: string; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+493    const modelInfo: ModelInfo = {
+             ~~~~~~~~~
+
+src/core/__tests__/Cline.test.ts:686:7 - error TS2322: Type 'string' is not assignable to type 'ClineSay'.
+
+686       say: "api_req_started",
+          ~~~
+
+  src/shared/ExtensionMessage.ts:77:2
+    77  say?: ClineSay
+        ~~~
+    The expected type comes from property 'say' which is declared here on type 'ClineMessage'
+
+src/core/Cline.ts:33:2 - error TS2305: Module '"../shared/ExtensionMessage"' has no exported member 'BrowserAction'.
+
+33  BrowserAction,
+    ~~~~~~~~~~~~~
+
+src/core/Cline.ts:34:2 - error TS2305: Module '"../shared/ExtensionMessage"' has no exported member 'BrowserActionResult'.
+
+34  BrowserActionResult,
+    ~~~~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:35:2 - error TS2305: Module '"../shared/ExtensionMessage"' has no exported member 'browserActions'.
+
+35  browserActions,
+    ~~~~~~~~~~~~~~
+
+src/core/Cline.ts:36:2 - error TS2305: Module '"../shared/ExtensionMessage"' has no exported member 'ClineApiReqCancelReason'.
+
+36  ClineApiReqCancelReason,
+    ~~~~~~~~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:37:2 - error TS2305: Module '"../shared/ExtensionMessage"' has no exported member 'ClineApiReqInfo'.
+
+37  ClineApiReqInfo,
+    ~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:39:2 - error TS2305: Module '"../shared/ExtensionMessage"' has no exported member 'ClineAskUseMcpServer'.
+
+39  ClineAskUseMcpServer,
+    ~~~~~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:42:2 - error TS2305: Module '"../shared/ExtensionMessage"' has no exported member 'ClineSayBrowserAction'.
+
+42  ClineSayBrowserAction,
+    ~~~~~~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:43:2 - error TS2724: '"../shared/ExtensionMessage"' has no exported member named 'ClineSayTool'. Did you mean 'ClineSay'?
+
+43  ClineSayTool,
+    ~~~~~~~~~~~~
+
+src/core/Cline.ts:239:16 - error TS2367: This comparison appears to be unintentional because the types 'ClineAsk | undefined' and 'string' have no overlap.
+
+239       (m) => !(m.ask === "resume_task" || m.ask === "resume_completed_task"),
+                   ~~~~~~~~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:239:43 - error TS2367: This comparison appears to be unintentional because the types 'ClineAsk | undefined' and 'string' have no overlap.
+
+239       (m) => !(m.ask === "resume_task" || m.ask === "resume_completed_task"),
+                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:277:6 - error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+277      lastMessage.text = text
+         ~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:284:56 - error TS2353: Object literal may only specify known properties, and 'partialMessage' does not exist in type 'ExtensionMessage'.
+
+284       ?.postMessageToWebview({ type: "partialMessage", partialMessage: lastMessage })
+                                                           ~~~~~~~~~~~~~~
+
+src/core/Cline.ts:293:73 - error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+293      await this.addToClineMessages({ ts: askTs, type: "ask", ask: type, text, partial })
+                                                                            ~~~~
+
+  src/shared/ExtensionMessage.ts:74:2
+    74  text: string
+        ~~~~
+    The expected type comes from property 'text' which is declared here on type 'ClineMessage'
+
+src/core/Cline.ts:314:6 - error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+314      lastMessage.text = text
+         ~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:320:56 - error TS2353: Object literal may only specify known properties, and 'partialMessage' does not exist in type 'ExtensionMessage'.
+
+320       ?.postMessageToWebview({ type: "partialMessage", partialMessage: lastMessage })
+                                                           ~~~~~~~~~~~~~~
+
+src/core/Cline.ts:328:73 - error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+328      await this.addToClineMessages({ ts: askTs, type: "ask", ask: type, text })
+                                                                            ~~~~
+
+  src/shared/ExtensionMessage.ts:74:2
+    74  text: string
+        ~~~~
+    The expected type comes from property 'text' which is declared here on type 'ClineMessage'
+
+src/core/Cline.ts:340:71 - error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+340    await this.addToClineMessages({ ts: askTs, type: "ask", ask: type, text })
+                                                                          ~~~~
+
+  src/shared/ExtensionMessage.ts:74:2
+    74  text: string
+        ~~~~
+    The expected type comes from property 'text' which is declared here on type 'ClineMessage'
+
+src/core/Cline.ts:373:6 - error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+373      lastMessage.text = text
+         ~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:378:56 - error TS2353: Object literal may only specify known properties, and 'partialMessage' does not exist in type 'ExtensionMessage'.
+
+378       ?.postMessageToWebview({ type: "partialMessage", partialMessage: lastMessage })
+                                                           ~~~~~~~~~~~~~~
+
+src/core/Cline.ts:383:73 - error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+383      await this.addToClineMessages({ ts: sayTs, type: "say", say: type, text, images, partial })
+                                                                            ~~~~
+
+  src/shared/ExtensionMessage.ts:74:2
+    74  text: string
+        ~~~~
+    The expected type comes from property 'text' which is declared here on type 'ClineMessage'
+
+src/core/Cline.ts:392:6 - error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+392      lastMessage.text = text
+         ~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:401:56 - error TS2353: Object literal may only specify known properties, and 'partialMessage' does not exist in type 'ExtensionMessage'.
+
+401       ?.postMessageToWebview({ type: "partialMessage", partialMessage: lastMessage }) // more performant than an entire postStateToWebview
+                                                           ~~~~~~~~~~~~~~
+
+src/core/Cline.ts:406:73 - error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+406      await this.addToClineMessages({ ts: sayTs, type: "say", say: type, text, images })
+                                                                            ~~~~
+
+  src/shared/ExtensionMessage.ts:74:2
+    74  text: string
+        ~~~~
+    The expected type comes from property 'text' which is declared here on type 'ClineMessage'
+
+src/core/Cline.ts:414:71 - error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+414    await this.addToClineMessages({ ts: sayTs, type: "say", say: type, text, images })
+                                                                          ~~~~
+
+  src/shared/ExtensionMessage.ts:74:2
+    74  text: string
+        ~~~~
+    The expected type comes from property 'text' which is declared here on type 'ClineMessage'
+
+src/core/Cline.ts:421:4 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineSay'.
+
+421    "error",
+       ~~~~~~~
+
+src/core/Cline.ts:438:18 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineSay'.
+
+438   await this.say("text", task, images)
+                     ~~~~~~
+
+src/core/Cline.ts:456:13 - error TS2367: This comparison appears to be unintentional because the types 'ClineAsk | undefined' and 'string' have no overlap.
+
+456    (m) => !(m.ask === "resume_task" || m.ask === "resume_completed_task"),
+                ~~~~~~~~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:456:40 - error TS2367: This comparison appears to be unintentional because the types 'ClineAsk | undefined' and 'string' have no overlap.
+
+456    (m) => !(m.ask === "resume_task" || m.ask === "resume_completed_task"),
+                                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:465:31 - error TS2367: This comparison appears to be unintentional because the types 'ClineSay | undefined' and 'string' have no overlap.
+
+465    (m) => m.type === "say" && m.say === "api_req_started",
+                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:488:19 - error TS2367: This comparison appears to be unintentional because the types 'ClineAsk | undefined' and 'string' have no overlap.
+
+488    .find((m) => !(m.ask === "resume_task" || m.ask === "resume_completed_task")) // could be multiple resume tasks
+                      ~~~~~~~~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:488:46 - error TS2367: This comparison appears to be unintentional because the types 'ClineAsk | undefined' and 'string' have no overlap.
+
+488    .find((m) => !(m.ask === "resume_task" || m.ask === "resume_completed_task")) // could be multiple resume tasks
+                                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:501:7 - error TS2367: This comparison appears to be unintentional because the types 'ClineAsk | undefined' and 'string' have no overlap.
+
+501   if (lastClineMessage?.ask === "completion_result") {
+          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:502:4 - error TS2322: Type 'string' is not assignable to type 'ClineAsk'.
+
+502    askType = "resume_completed_task"
+       ~~~~~~~
+
+src/core/Cline.ts:504:4 - error TS2322: Type 'string' is not assignable to type 'ClineAsk'.
+
+504    askType = "resume_task"
+       ~~~~~~~
+
+src/core/Cline.ts:511:19 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineSay'.
+
+511    await this.say("user_feedback", text, images)
+                      ~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:725:55 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineAsk'.
+
+725     const { response, text, images } = await this.ask("command_output", line)
+                                                          ~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:744:14 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineSay'.
+
+744     this.say("command_output", line)
+                 ~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:754:19 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineSay'.
+
+754    await this.say("shell_integration_warning")
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:771:19 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineSay'.
+
+771    await this.say("user_feedback", userFeedback.text, userFeedback.images)
+                      ~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:891:7 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineSay'.
+
+891       "api_req_retry_delayed",
+          ~~~~~~~~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:898:20 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineSay'.
+
+898     await this.say("api_req_retry_delayed", `${errorMsg}\n\nRetrying now...`, undefined, false)
+                       ~~~~~~~~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:904:6 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineAsk'.
+
+904      "api_req_failed",
+         ~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:911:20 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineSay'.
+
+911     await this.say("api_req_retried")
+                       ~~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:991:20 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineSay'.
+
+991     await this.say("text", content, undefined, block.partial)
+                       ~~~~~~
+
+src/core/Cline.ts:1073:23 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineSay'.
+
+1073        await this.say("user_feedback", text, images)
+                           ~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:1107:7 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineSay'.
+
+1107       "error",
+           ~~~~~~~
+
+src/core/Cline.ts:1204:24 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineAsk'.
+
+1204         await this.ask("tool", partialMessage, block.partial).catch(() => {})
+                            ~~~~~~
+
+src/core/Cline.ts:1245:25 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineAsk'.
+
+1245          await this.ask("tool", partialMessage, true).catch(() => {}) // sending true for partial even though it's not a partial, this shows the edit row before the content is streamed into the editor
+                             ~~~~~~
+
+src/core/Cline.ts:1300:46 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineAsk'.
+
+1300         const didApprove = await askApproval("tool", completeMessage)
+                                                  ~~~~~~
+
+src/core/Cline.ts:1310:11 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineSay'.
+
+1310           "user_feedback_diff",
+               ~~~~~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:1354:24 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineAsk'.
+
+1354         await this.ask("tool", partialMessage, block.partial).catch(() => {})
+                            ~~~~~~
+
+src/core/Cline.ts:1374:25 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineSay'.
+
+1374          await this.say("error", formattedError)
+                             ~~~~~~~
+
+src/core/Cline.ts:1401:26 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineSay'.
+
+1401           await this.say("error", formattedError)
+                              ~~~~~~~
+
+src/core/Cline.ts:1420:46 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineAsk'.
+
+1420         const didApprove = await askApproval("tool", completeMessage)
+                                                  ~~~~~~
+
+src/core/Cline.ts:1431:11 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineSay'.
+
+1431           "user_feedback_diff",
+               ~~~~~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:1474:24 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineAsk'.
+
+1474         await this.ask("tool", partialMessage, block.partial).catch(() => {})
+                            ~~~~~~
+
+src/core/Cline.ts:1488:46 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineAsk'.
+
+1488         const didApprove = await askApproval("tool", completeMessage)
+                                                  ~~~~~~
+
+src/core/Cline.ts:1516:24 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineAsk'.
+
+1516         await this.ask("tool", partialMessage, block.partial).catch(() => {})
+                            ~~~~~~
+
+src/core/Cline.ts:1532:46 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineAsk'.
+
+1532         const didApprove = await askApproval("tool", completeMessage)
+                                                  ~~~~~~
+
+src/core/Cline.ts:1556:24 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineAsk'.
+
+1556         await this.ask("tool", partialMessage, block.partial).catch(() => {})
+                            ~~~~~~
+
+src/core/Cline.ts:1573:46 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineAsk'.
+
+1573         const didApprove = await askApproval("tool", completeMessage)
+                                                  ~~~~~~
+
+src/core/Cline.ts:1601:24 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineAsk'.
+
+1601         await this.ask("tool", partialMessage, block.partial).catch(() => {})
+                            ~~~~~~
+
+src/core/Cline.ts:1621:46 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineAsk'.
+
+1621         const didApprove = await askApproval("tool", completeMessage)
+                                                  ~~~~~~
+
+src/core/Cline.ts:1653:11 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineAsk'.
+
+1653           "browser_action_launch",
+               ~~~~~~~~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:1659:11 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineSay'.
+
+1659           "browser_action",
+               ~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:1682:47 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineAsk'.
+
+1682          const didApprove = await askApproval("browser_action_launch", url)
+                                                   ~~~~~~~~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:1689:25 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineSay'.
+
+1689          await this.say("browser_action_result", "") // starts loading spinner
+                             ~~~~~~~~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:1719:11 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineSay'.
+
+1719           "browser_action",
+               ~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:1753:26 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineSay'.
+
+1753           await this.say("browser_action_result", JSON.stringify(browserActionResult))
+                              ~~~~~~~~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:1783:24 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineAsk'.
+
+1783         await this.ask("command", removeClosingTag("command", command), block.partial).catch(
+                            ~~~~~~~~~
+
+src/core/Cline.ts:1797:46 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineAsk'.
+
+1797         const didApprove = await askApproval("command", command)
+                                                  ~~~~~~~~~
+
+src/core/Cline.ts:1825:24 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineAsk'.
+
+1825         await this.ask("use_mcp_server", partialMessage, block.partial).catch(() => {})
+                            ~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:1855:12 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineSay'.
+
+1855            "error",
+                ~~~~~~~
+
+src/core/Cline.ts:1873:46 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineAsk'.
+
+1873         const didApprove = await askApproval("use_mcp_server", completeMessage)
+                                                  ~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:1878:24 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineSay'.
+
+1878         await this.say("mcp_server_request_started") // same as browser_action_result
+                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:1887:18 - error TS7006: Parameter 'item' implicitly has an 'any' type.
+
+1887            .map((item) => {
+                      ~~~~
+
+src/core/Cline.ts:1899:24 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineSay'.
+
+1899         await this.say("mcp_server_response", toolResultPretty)
+                            ~~~~~~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:1918:24 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineAsk'.
+
+1918         await this.ask("use_mcp_server", partialMessage, block.partial).catch(() => {})
+                            ~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:1941:46 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineAsk'.
+
+1941         const didApprove = await askApproval("use_mcp_server", completeMessage)
+                                                  ~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:1946:24 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineSay'.
+
+1946         await this.say("mcp_server_request_started")
+                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:1952:17 - error TS7006: Parameter 'item' implicitly has an 'any' type.
+
+1952           .map((item) => {
+                     ~~~~
+
+src/core/Cline.ts:1960:24 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineSay'.
+
+1960         await this.say("mcp_server_response", resourceResultPretty)
+                            ~~~~~~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:1973:24 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineAsk'.
+
+1973         await this.ask("followup", removeClosingTag("question", question), block.partial).catch(
+                            ~~~~~~~~~~
+
+src/core/Cline.ts:1986:49 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineAsk'.
+
+1986         const { text, images } = await this.ask("followup", question, false)
+                                                     ~~~~~~~~~~
+
+src/core/Cline.ts:1987:24 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineSay'.
+
+1987         await this.say("user_feedback", text ?? "", images)
+                            ~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:2027:29 - error TS2367: This comparison appears to be unintentional because the types 'ClineAsk | undefined' and 'string' have no overlap.
+
+2027          if (lastMessage && lastMessage.ask === "command") {
+                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:2030:12 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineAsk'.
+
+2030            "command",
+                ~~~~~~~~~
+
+src/core/Cline.ts:2038:12 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineSay'.
+
+2038            "completion_result",
+                ~~~~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:2044:12 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineAsk'.
+
+2044            "command",
+                ~~~~~~~~~
+
+src/core/Cline.ts:2052:11 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineSay'.
+
+2052           "completion_result",
+               ~~~~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:2071:29 - error TS2367: This comparison appears to be unintentional because the types 'ClineAsk | undefined' and 'string' have no overlap.
+
+2071          if (lastMessage && lastMessage.ask !== "command") {
+                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:2073:26 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineSay'.
+
+2073           await this.say("completion_result", result, undefined, false)
+                              ~~~~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:2077:47 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineAsk'.
+
+2077          const didApprove = await askApproval("command", command)
+                                                   ~~~~~~~~~
+
+src/core/Cline.ts:2090:25 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineSay'.
+
+2090          await this.say("completion_result", result, undefined, false)
+                             ~~~~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:2094:59 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineAsk'.
+
+2094         const { response, text, images } = await this.ask("completion_result", "", false)
+                                                               ~~~~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:2099:24 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineSay'.
+
+2099         await this.say("user_feedback", text ?? "", images)
+                            ~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:2172:5 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineAsk'.
+
+2172     "mistake_limit_reached",
+         ~~~~~~~~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:2192:72 - error TS2367: This comparison appears to be unintentional because the types 'ClineSay | undefined' and 'string' have no overlap.
+
+2192   const previousApiReqIndex = findLastIndex(this.clineMessages, (m) => m.say === "api_req_started")
+                                                                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:2197:4 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineSay'.
+
+2197    "api_req_started",
+        ~~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:2212:68 - error TS2367: This comparison appears to be unintentional because the types 'ClineSay | undefined' and 'string' have no overlap.
+
+2212   const lastApiReqIndex = findLastIndex(this.clineMessages, (m) => m.say === "api_req_started")
+                                                                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/core/Cline.ts:2423:6 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ClineSay'.
+
+2423      "error",
+          ~~~~~~~
+
+src/core/config/__tests__/ConfigManager.test.ts:90:5 - error TS2353: Object literal may only specify known properties, and 'currentApiConfigName' does not exist in type 'ApiConfigData'.
+
+90     currentApiConfigName: "default",
+       ~~~~~~~~~~~~~~~~~~~~
+
+src/core/config/__tests__/ConfigManager.test.ts:118:5 - error TS2353: Object literal may only specify known properties, and 'currentApiConfigName' does not exist in type 'ApiConfigData'.
+
+118     currentApiConfigName: "default",
+        ~~~~~~~~~~~~~~~~~~~~
+
+src/core/config/__tests__/ConfigManager.test.ts:193:5 - error TS2353: Object literal may only specify known properties, and 'currentApiConfigName' does not exist in type 'ApiConfigData'.
+
+193     currentApiConfigName: "default",
+        ~~~~~~~~~~~~~~~~~~~~
+
+src/core/config/__tests__/ConfigManager.test.ts:247:5 - error TS2353: Object literal may only specify known properties, and 'currentApiConfigName' does not exist in type 'ApiConfigData'.
+
+247     currentApiConfigName: "default",
+        ~~~~~~~~~~~~~~~~~~~~
+
+src/core/config/__tests__/ConfigManager.test.ts:302:5 - error TS2353: Object literal may only specify known properties, and 'currentApiConfigName' does not exist in type 'ApiConfigData'.
+
+302     currentApiConfigName: "default",
+        ~~~~~~~~~~~~~~~~~~~~
+
+src/core/config/__tests__/ConfigManager.test.ts:373:5 - error TS2353: Object literal may only specify known properties, and 'currentApiConfigName' does not exist in type 'ApiConfigData'.
+
+373     currentApiConfigName: "default",
+        ~~~~~~~~~~~~~~~~~~~~
+
+src/core/config/__tests__/ConfigManager.test.ts:432:5 - error TS2353: Object literal may only specify known properties, and 'currentApiConfigName' does not exist in type 'ApiConfigData'.
+
+432     currentApiConfigName: "default",
+        ~~~~~~~~~~~~~~~~~~~~
+
+src/core/config/ConfigManager.ts:184:4 - error TS2339: Property 'ollamaModelId' does not exist on type 'ApiConfiguration'.
+
+184    ollamaModelId,
+       ~~~~~~~~~~~~~
+
+src/core/config/ConfigManager.ts:186:4 - error TS2339: Property 'lmStudioModelId' does not exist on type 'ApiConfiguration'.
+
+186    lmStudioModelId,
+       ~~~~~~~~~~~~~~~
+
+src/core/webview/__tests__/ClineProvider.test.ts:277:4 - error TS2353: Object literal may only specify known properties, and 'version' does not exist in type 'ExtensionState'.
+
+277    version: "1.0.0",
+       ~~~~~~~
+
+src/core/webview/ClineProvider.ts:13:29 - error TS2307: Cannot find module '../../integrations/misc/open-mention' or its corresponding type declarations.
+
+13 import { openMention } from "../../integrations/misc/open-mention"
+                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/core/webview/ClineProvider.ts:22:24 - error TS2307: Cannot find module '../mcp/McpHub' or its corresponding type declarations.
+
+22 import { McpHub } from "../mcp/McpHub"
+                          ~~~~~~~~~~~~~~~
+
+src/core/webview/ClineProvider.ts:23:34 - error TS2307: Cannot find module '../WorkspaceTracker' or its corresponding type declarations.
+
+23 import { WorkspaceTracker } from "../WorkspaceTracker"
+                                    ~~~~~~~~~~~~~~~~~~~~~
+
+src/core/webview/ClineProvider.ts:508:58 - error TS2353: Object literal may only specify known properties, and 'openAiModels' does not exist in type 'ExtensionMessage'.
+
+508        this.postMessageToWebview({ type: "openAiModels", openAiModels })
+                                                             ~~~~~~~~~~~~
+
+src/core/webview/ClineProvider.ts:749:48 - error TS2367: This comparison appears to be unintentional because the types 'ClineSay | undefined' and 'string' have no overlap.
+
+749           .find((msg) => msg.type === "say" && msg.say === "user_feedback")
+                                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/core/webview/ClineProvider.ts:976:6 - error TS7029: Fallthrough case in switch.
+
+976      case "experimentalDiffStrategy":
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/core/webview/ClineProvider.ts:1022:66 - error TS2551: Property 'ollamaModelId' does not exist on type 'ApiConfiguration'. Did you mean 'glamaModelId'?
+
+1022   await this.updateGlobalState("ollamaModelId", apiConfiguration.ollamaModelId)
+                                                                      ~~~~~~~~~~~~~
+
+  src/shared/api.ts:23:2
+    23  glamaModelId?: string
+        ~~~~~~~~~~~~
+    'glamaModelId' is declared here.
+
+src/core/webview/ClineProvider.ts:1024:68 - error TS2339: Property 'lmStudioModelId' does not exist on type 'ApiConfiguration'.
+
+1024   await this.updateGlobalState("lmStudioModelId", apiConfiguration.lmStudioModelId)
+                                                                        ~~~~~~~~~~~~~~~
+
+src/core/webview/ClineProvider.ts:1135:5 - error TS2554: Expected 1 arguments, but got 2.
+
+1135     this.context
+         ~~~~~~~~~~~~
+
+src/core/webview/ClineProvider.ts:1137:29 - error TS2551: Property 'getModels' does not exist on type 'ApiHandler'. Did you mean 'getModel'?
+
+1137    const models = await api.getModels()
+                                 ~~~~~~~~~
+
+  src/api/index.ts:24:2
+    24  getModel(): { id: string; info: ModelInfo }
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    'getModel' is declared here.
+
+src/core/webview/ClineProvider.ts:1280:7 - error TS2322: Type 'number | undefined' is not assignable to type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+
+1280       inputPrice: parsePrice(rawModel.pricePerToken?.input),
+           ~~~~~~~~~~
+
+  src/shared/api.ts:77:2
+    77  inputPrice: number
+        ~~~~~~~~~~
+    The expected type comes from property 'inputPrice' which is declared here on type 'ModelInfo'
+
+src/core/webview/ClineProvider.ts:1281:7 - error TS2322: Type 'number | undefined' is not assignable to type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+
+1281       outputPrice: parsePrice(rawModel.pricePerToken?.output),
+           ~~~~~~~~~~~
+
+  src/shared/api.ts:78:2
+    78  outputPrice: number
+        ~~~~~~~~~~~
+    The expected type comes from property 'outputPrice' which is declared here on type 'ModelInfo'
+
+src/core/webview/ClineProvider.ts:1364:7 - error TS2322: Type 'number | undefined' is not assignable to type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+
+1364       inputPrice: parsePrice(rawModel.pricing?.prompt),
+           ~~~~~~~~~~
+
+  src/shared/api.ts:77:2
+    77  inputPrice: number
+        ~~~~~~~~~~
+    The expected type comes from property 'inputPrice' which is declared here on type 'ModelInfo'
+
+src/core/webview/ClineProvider.ts:1365:7 - error TS2322: Type 'number | undefined' is not assignable to type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+
+1365       outputPrice: parsePrice(rawModel.pricing?.completion),
+           ~~~~~~~~~~~
+
+  src/shared/api.ts:78:2
+    78  outputPrice: number
+        ~~~~~~~~~~~
+    The expected type comes from property 'outputPrice' which is declared here on type 'ModelInfo'
+
+src/exports/index.ts:23:5 - error TS2353: Object literal may only specify known properties, and 'invoke' does not exist in type 'ExtensionMessage'.
+
+23     invoke: "sendMessage",
+       ~~~~~~
+
+src/exports/index.ts:38:5 - error TS2353: Object literal may only specify known properties, and 'invoke' does not exist in type 'ExtensionMessage'.
+
+38     invoke: "sendMessage",
+       ~~~~~~
+
+src/exports/index.ts:48:5 - error TS2353: Object literal may only specify known properties, and 'invoke' does not exist in type 'ExtensionMessage'.
+
+48     invoke: "primaryButtonClick",
+       ~~~~~~
+
+src/exports/index.ts:56:5 - error TS2353: Object literal may only specify known properties, and 'invoke' does not exist in type 'ExtensionMessage'.
+
+56     invoke: "secondaryButtonClick",
+       ~~~~~~
+
+src/integrations/workspace/WorkspaceTracker.ts:64:5 - error TS2353: Object literal may only specify known properties, and 'filePaths' does not exist in type 'ExtensionMessage'.
+
+64     filePaths: Array.from(this.filePaths).map((file) => {
+       ~~~~~~~~~
+
+src/services/browser/BrowserSession.ts:10:10 - error TS2305: Module '"../../shared/ExtensionMessage"' has no exported member 'BrowserActionResult'.
+
+10 import { BrowserActionResult } from "../../shared/ExtensionMessage"
+            ~~~~~~~~~~~~~~~~~~~
+
+src/services/mcp/McpHub.ts:460:4 - error TS2322: Type '"mcpServers"' is not assignable to type '"error" | "theme" | "autoApprovalEnabled" | "glamaModels" | "action" | "state" | "selectedImages" | "ollamaModels" | "lmStudioModels" | "workspaceUpdated" | "invoke" | "partialMessage" | ... 7 more ... | "commitSearchResults"'.
+
+460    type: "mcpServers",
+       ~~~~
+
+  src/shared/ExtensionMessage.ts:14:2
+    14  type: "autoApprovalEnabled" | "glamaModels" | "action" | "state" | "selectedImages" | "ollamaModels" | "lmStudioModels" | "theme" | "workspaceUpdated" | "invoke" | "partialMessage" | "error" | "themeChanged" | "openRouterModels" | "listApiConfig" | "systemPrompt" | "vsCodeLmModels" | "openAiModels" | "enhancedPrompt" | "commitSearchResults"
+        ~~~~
+    The expected type comes from property 'type' which is declared here on type 'ExtensionMessage'
+
+src/shared/__tests__/checkExistApiConfig.test.ts:47:4 - error TS2561: Object literal may only specify known properties, but 'ollamaModelId' does not exist in type 'ApiConfiguration'. Did you mean to write 'glamaModelId'?
+
+47    ollamaModelId: undefined,
+      ~~~~~~~~~~~~~
+
+src/shared/api.ts:117:2 - error TS2739: Type '{ readonly maxTokens: 4096; readonly contextWindow: 200000; readonly supportsImages: true; readonly supportsPromptCache: true; readonly inputPrice: 15; readonly outputPrice: 75; readonly cacheWritesPrice: 18.75; readonly cacheReadsPrice: 1.5; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+117  "claude-3-opus-20240229": {
+     ~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/api.ts:127:2 - error TS2739: Type '{ readonly maxTokens: 4096; readonly contextWindow: 200000; readonly supportsImages: true; readonly supportsPromptCache: true; readonly inputPrice: 0.25; readonly outputPrice: 1.25; readonly cacheWritesPrice: 0.3; readonly cacheReadsPrice: 0.03; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+127  "claude-3-haiku-20240307": {
+     ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/api.ts:165:2 - error TS2739: Type '{ readonly maxTokens: 5000; readonly contextWindow: 300000; readonly supportsImages: true; readonly supportsComputerUse: false; readonly supportsPromptCache: false; readonly inputPrice: 0.8; readonly outputPrice: 3.2; readonly cacheWritesPrice: 0.8; readonly cacheReadsPrice: 0.2; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+165  "amazon.nova-pro-v1:0": {
+     ~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/api.ts:176:2 - error TS2739: Type '{ readonly maxTokens: 5000; readonly contextWindow: 300000; readonly supportsImages: true; readonly supportsComputerUse: false; readonly supportsPromptCache: false; readonly inputPrice: 0.06; readonly outputPrice: 0.024; readonly cacheWritesPrice: 0.06; readonly cacheReadsPrice: 0.015; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+176  "amazon.nova-lite-v1:0": {
+     ~~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/api.ts:187:2 - error TS2739: Type '{ readonly maxTokens: 5000; readonly contextWindow: 128000; readonly supportsImages: false; readonly supportsComputerUse: false; readonly supportsPromptCache: false; readonly inputPrice: 0.035; readonly outputPrice: 0.14; readonly cacheWritesPrice: 0.035; readonly cacheReadsPrice: 0.00875; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+187  "amazon.nova-micro-v1:0": {
+     ~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/api.ts:198:2 - error TS2739: Type '{ readonly maxTokens: 8192; readonly contextWindow: 200000; readonly supportsImages: true; readonly supportsComputerUse: true; readonly supportsPromptCache: false; readonly inputPrice: 3; readonly outputPrice: 15; readonly cacheWritesPrice: 3.75; readonly cacheReadsPrice: 0.3; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+198  "anthropic.claude-3-5-sonnet-20241022-v2:0": {
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/api.ts:209:2 - error TS2739: Type '{ readonly maxTokens: 8192; readonly contextWindow: 200000; readonly supportsImages: false; readonly supportsPromptCache: false; readonly inputPrice: 1; readonly outputPrice: 5; readonly cacheWritesPrice: 1; readonly cacheReadsPrice: 0.08; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+209  "anthropic.claude-3-5-haiku-20241022-v1:0": {
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/api.ts:219:2 - error TS2739: Type '{ readonly maxTokens: 8192; readonly contextWindow: 200000; readonly supportsImages: true; readonly supportsPromptCache: false; readonly inputPrice: 3; readonly outputPrice: 15; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+219  "anthropic.claude-3-5-sonnet-20240620-v1:0": {
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/api.ts:227:2 - error TS2739: Type '{ readonly maxTokens: 4096; readonly contextWindow: 200000; readonly supportsImages: true; readonly supportsPromptCache: false; readonly inputPrice: 15; readonly outputPrice: 75; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+227  "anthropic.claude-3-opus-20240229-v1:0": {
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/api.ts:235:2 - error TS2739: Type '{ readonly maxTokens: 4096; readonly contextWindow: 200000; readonly supportsImages: true; readonly supportsPromptCache: false; readonly inputPrice: 3; readonly outputPrice: 15; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+235  "anthropic.claude-3-sonnet-20240229-v1:0": {
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/api.ts:243:2 - error TS2739: Type '{ readonly maxTokens: 4096; readonly contextWindow: 200000; readonly supportsImages: true; readonly supportsPromptCache: false; readonly inputPrice: 0.25; readonly outputPrice: 1.25; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+243  "anthropic.claude-3-haiku-20240307-v1:0": {
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/api.ts:251:2 - error TS2739: Type '{ readonly maxTokens: 8192; readonly contextWindow: 128000; readonly supportsImages: true; readonly supportsComputerUse: false; readonly supportsPromptCache: false; readonly inputPrice: 0.72; readonly outputPrice: 0.72; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+251  "meta.llama3-2-90b-instruct-v1:0": {
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/api.ts:260:2 - error TS2739: Type '{ readonly maxTokens: 8192; readonly contextWindow: 128000; readonly supportsImages: true; readonly supportsComputerUse: false; readonly supportsPromptCache: false; readonly inputPrice: 0.16; readonly outputPrice: 0.16; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+260  "meta.llama3-2-11b-instruct-v1:0": {
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/api.ts:269:2 - error TS2739: Type '{ readonly maxTokens: 8192; readonly contextWindow: 128000; readonly supportsImages: false; readonly supportsComputerUse: false; readonly supportsPromptCache: false; readonly inputPrice: 0.15; readonly outputPrice: 0.15; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+269  "meta.llama3-2-3b-instruct-v1:0": {
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/api.ts:278:2 - error TS2739: Type '{ readonly maxTokens: 8192; readonly contextWindow: 128000; readonly supportsImages: false; readonly supportsComputerUse: false; readonly supportsPromptCache: false; readonly inputPrice: 0.1; readonly outputPrice: 0.1; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+278  "meta.llama3-2-1b-instruct-v1:0": {
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/api.ts:287:2 - error TS2739: Type '{ readonly maxTokens: 8192; readonly contextWindow: 128000; readonly supportsImages: false; readonly supportsComputerUse: false; readonly supportsPromptCache: false; readonly inputPrice: 2.4; readonly outputPrice: 2.4; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+287  "meta.llama3-1-405b-instruct-v1:0": {
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/api.ts:296:2 - error TS2739: Type '{ readonly maxTokens: 8192; readonly contextWindow: 128000; readonly supportsImages: false; readonly supportsComputerUse: false; readonly supportsPromptCache: false; readonly inputPrice: 0.72; readonly outputPrice: 0.72; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+296  "meta.llama3-1-70b-instruct-v1:0": {
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/api.ts:305:2 - error TS2739: Type '{ readonly maxTokens: 8192; readonly contextWindow: 8000; readonly supportsImages: false; readonly supportsComputerUse: false; readonly supportsPromptCache: false; readonly inputPrice: 0.22; readonly outputPrice: 0.22; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+305  "meta.llama3-1-8b-instruct-v1:0": {
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/api.ts:314:2 - error TS2739: Type '{ readonly maxTokens: 2048; readonly contextWindow: 8000; readonly supportsImages: false; readonly supportsComputerUse: false; readonly supportsPromptCache: false; readonly inputPrice: 2.65; readonly outputPrice: 3.5; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+314  "meta.llama3-70b-instruct-v1:0": {
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/api.ts:323:2 - error TS2739: Type '{ readonly maxTokens: 2048; readonly contextWindow: 4000; readonly supportsImages: false; readonly supportsComputerUse: false; readonly supportsPromptCache: false; readonly inputPrice: 0.3; readonly outputPrice: 0.6; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+323  "meta.llama3-8b-instruct-v1:0": {
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/api.ts:337:14 - error TS2739: Type '{ maxTokens: number; contextWindow: number; supportsImages: true; supportsComputerUse: true; supportsPromptCache: true; inputPrice: number; outputPrice: number; cacheWritesPrice: number; cacheReadsPrice: number; description: string; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+337 export const glamaDefaultModelInfo: ModelInfo = {
+                 ~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/api.ts:354:14 - error TS2739: Type '{ maxTokens: number; contextWindow: number; supportsImages: true; supportsComputerUse: true; supportsPromptCache: true; inputPrice: number; outputPrice: number; cacheWritesPrice: number; cacheReadsPrice: number; description: string; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+354 export const openRouterDefaultModelInfo: ModelInfo = {
+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/api.ts:385:2 - error TS2739: Type '{ readonly maxTokens: 8192; readonly contextWindow: 200000; readonly supportsImages: true; readonly supportsPromptCache: false; readonly inputPrice: 3; readonly outputPrice: 15; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+385  "claude-3-5-sonnet@20240620": {
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/api.ts:393:2 - error TS2739: Type '{ readonly maxTokens: 8192; readonly contextWindow: 200000; readonly supportsImages: false; readonly supportsPromptCache: false; readonly inputPrice: 1; readonly outputPrice: 5; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+393  "claude-3-5-haiku@20241022": {
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/api.ts:401:2 - error TS2739: Type '{ readonly maxTokens: 4096; readonly contextWindow: 200000; readonly supportsImages: true; readonly supportsPromptCache: false; readonly inputPrice: 15; readonly outputPrice: 75; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+401  "claude-3-opus@20240229": {
+     ~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/api.ts:409:2 - error TS2739: Type '{ readonly maxTokens: 4096; readonly contextWindow: 200000; readonly supportsImages: true; readonly supportsPromptCache: false; readonly inputPrice: 0.25; readonly outputPrice: 1.25; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+409  "claude-3-haiku@20240307": {
+     ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/api.ts:419:14 - error TS2739: Type '{ maxTokens: number; contextWindow: number; supportsImages: true; supportsPromptCache: false; inputPrice: number; outputPrice: number; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+419 export const openAiModelInfoSaneDefaults: ModelInfo = {
+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/api.ts:445:2 - error TS2739: Type '{ readonly maxTokens: 8192; readonly contextWindow: 1048576; readonly supportsImages: true; readonly supportsPromptCache: false; readonly inputPrice: 0; readonly outputPrice: 0; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+445  "gemini-2.0-flash-exp": {
+     ~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/api.ts:453:2 - error TS2739: Type '{ readonly maxTokens: 8192; readonly contextWindow: 1048576; readonly supportsImages: true; readonly supportsPromptCache: false; readonly inputPrice: 0; readonly outputPrice: 0; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+453  "gemini-1.5-flash-002": {
+     ~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/api.ts:461:2 - error TS2739: Type '{ readonly maxTokens: 8192; readonly contextWindow: 1048576; readonly supportsImages: true; readonly supportsPromptCache: false; readonly inputPrice: 0; readonly outputPrice: 0; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+461  "gemini-1.5-flash-exp-0827": {
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/api.ts:469:2 - error TS2739: Type '{ readonly maxTokens: 8192; readonly contextWindow: 1048576; readonly supportsImages: true; readonly supportsPromptCache: false; readonly inputPrice: 0; readonly outputPrice: 0; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+469  "gemini-1.5-flash-8b-exp-0827": {
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/api.ts:477:2 - error TS2739: Type '{ readonly maxTokens: 8192; readonly contextWindow: 2097152; readonly supportsImages: true; readonly supportsPromptCache: false; readonly inputPrice: 0; readonly outputPrice: 0; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+477  "gemini-1.5-pro-002": {
+     ~~~~~~~~~~~~~~~~~~~~
+
+src/shared/api.ts:485:2 - error TS2739: Type '{ readonly maxTokens: 8192; readonly contextWindow: 2097152; readonly supportsImages: true; readonly supportsPromptCache: false; readonly inputPrice: 0; readonly outputPrice: 0; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+485  "gemini-1.5-pro-exp-0827": {
+     ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/api.ts:493:2 - error TS2739: Type '{ readonly maxTokens: 8192; readonly contextWindow: 2097152; readonly supportsImages: true; readonly supportsPromptCache: false; readonly inputPrice: 0; readonly outputPrice: 0; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+493  "gemini-exp-1206": {
+     ~~~~~~~~~~~~~~~~~
+
+src/shared/api.ts:509:2 - error TS2739: Type '{ readonly maxTokens: 100000; readonly contextWindow: 200000; readonly supportsImages: true; readonly supportsPromptCache: false; readonly inputPrice: 15; readonly outputPrice: 60; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+509  o1: {
+     ~~
+
+src/shared/api.ts:517:2 - error TS2739: Type '{ readonly maxTokens: 32768; readonly contextWindow: 128000; readonly supportsImages: true; readonly supportsPromptCache: false; readonly inputPrice: 15; readonly outputPrice: 60; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+517  "o1-preview": {
+     ~~~~~~~~~~~~
+
+src/shared/api.ts:525:2 - error TS2739: Type '{ readonly maxTokens: 65536; readonly contextWindow: 128000; readonly supportsImages: true; readonly supportsPromptCache: false; readonly inputPrice: 3; readonly outputPrice: 12; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+525  "o1-mini": {
+     ~~~~~~~~~
+
+src/shared/api.ts:533:2 - error TS2739: Type '{ readonly maxTokens: 4096; readonly contextWindow: 128000; readonly supportsImages: true; readonly supportsPromptCache: false; readonly inputPrice: 5; readonly outputPrice: 15; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+533  "gpt-4o": {
+     ~~~~~~~~
+
+src/shared/api.ts:541:2 - error TS2739: Type '{ readonly maxTokens: 16384; readonly contextWindow: 128000; readonly supportsImages: true; readonly supportsPromptCache: false; readonly inputPrice: 0.15; readonly outputPrice: 0.6; }' is missing the following properties from type 'ModelInfo': id, name, provider
+
+541  "gpt-4o-mini": {
+     ~~~~~~~~~~~~~
+
+src/shared/checkExistApiConfig.ts:12:12 - error TS2551: Property 'ollamaModelId' does not exist on type 'ApiConfiguration'. Did you mean 'glamaModelId'?
+
+12     config.ollamaModelId,
+              ~~~~~~~~~~~~~
+
+  src/shared/api.ts:23:2
+    23  glamaModelId?: string
+        ~~~~~~~~~~~~
+    'glamaModelId' is declared here.
+
+src/shared/checkExistApiConfig.ts:13:12 - error TS2339: Property 'lmStudioModelId' does not exist on type 'ApiConfiguration'.
+
+13     config.lmStudioModelId,
+              ~~~~~~~~~~~~~~~
+
+src/shared/combineApiRequests.ts:25:37 - error TS2367: This comparison appears to be unintentional because the types 'ClineSay | undefined' and 'string' have no overlap.
+
+25   if (messages[i].type === "say" && messages[i].say === "api_req_started") {
+                                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/combineApiRequests.ts:30:39 - error TS2367: This comparison appears to be unintentional because the types 'ClineSay | undefined' and 'string' have no overlap.
+
+30     if (messages[j].type === "say" && messages[j].say === "api_req_finished") {
+                                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/combineApiRequests.ts:54:44 - error TS2367: This comparison appears to be unintentional because the types 'ClineSay | undefined' and 'string' have no overlap.
+
+54   .filter((msg) => !(msg.type === "say" && msg.say === "api_req_finished"))
+                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/combineApiRequests.ts:56:30 - error TS2367: This comparison appears to be unintentional because the types 'ClineSay | undefined' and 'string' have no overlap.
+
+56    if (msg.type === "say" && msg.say === "api_req_started") {
+                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/combineCommandSequences.ts:28:37 - error TS2367: This comparison appears to be unintentional because the types 'ClineAsk | undefined' and 'string' have no overlap.
+
+28   if (messages[i].type === "ask" && messages[i].ask === "command") {
+                                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/combineCommandSequences.ts:34:39 - error TS2367: This comparison appears to be unintentional because the types 'ClineAsk | undefined' and 'string' have no overlap.
+
+34     if (messages[j].type === "ask" && messages[j].ask === "command") {
+                                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/combineCommandSequences.ts:38:9 - error TS2367: This comparison appears to be unintentional because the types 'ClineAsk | undefined' and 'string' have no overlap.
+
+38     if (messages[j].ask === "command_output" || messages[j].say === "command_output") {
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/combineCommandSequences.ts:38:49 - error TS2367: This comparison appears to be unintentional because the types 'ClineSay | undefined' and 'string' have no overlap.
+
+38     if (messages[j].ask === "command_output" || messages[j].say === "command_output") {
+                                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/combineCommandSequences.ts:64:22 - error TS2367: This comparison appears to be unintentional because the types 'ClineAsk | undefined' and 'string' have no overlap.
+
+64   .filter((msg) => !(msg.ask === "command_output" || msg.say === "command_output"))
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/combineCommandSequences.ts:64:54 - error TS2367: This comparison appears to be unintentional because the types 'ClineSay | undefined' and 'string' have no overlap.
+
+64   .filter((msg) => !(msg.ask === "command_output" || msg.say === "command_output"))
+                                                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/combineCommandSequences.ts:66:30 - error TS2367: This comparison appears to be unintentional because the types 'ClineAsk | undefined' and 'string' have no overlap.
+
+66    if (msg.type === "ask" && msg.ask === "command") {
+                                ~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/getApiMetrics.ts:38:33 - error TS2367: This comparison appears to be unintentional because the types 'ClineSay | undefined' and 'string' have no overlap.
+
+38   if (message.type === "say" && message.say === "api_req_started" && message.text) {
+                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/validation.ts:150:37 - error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+150         if (requiresReauth.includes(fromConfig.apiProvider) && requiresReauth.includes(toConfig.apiProvider)) {
+                                        ~~~~~~~~~~~~~~~~~~~~~~
+
+src/shared/validation.ts:150:88 - error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+150         if (requiresReauth.includes(fromConfig.apiProvider) && requiresReauth.includes(toConfig.apiProvider)) {
+                                                                                           ~~~~~~~~~~~~~~~~~~~~
+
+src/utils/__tests__/cost.test.ts:6:9 - error TS2739: Type '{ maxTokens: number; contextWindow: number; supportsPromptCache: true; inputPrice: number; outputPrice: number; cacheWritesPrice: number; cacheReadsPrice: number; }' is missing the following properties from type 'ModelInfo': id, name, provider, supportsImages
+
+6   const mockModelInfo: ModelInfo = {
+          ~~~~~~~~~~~~~
+
+src/utils/__tests__/cost.test.ts:57:10 - error TS2740: Type '{ maxTokens: number; contextWindow: number; supportsPromptCache: true; }' is missing the following properties from type 'ModelInfo': id, name, provider, supportsImages, and 2 more.
+
+57    const modelWithoutPrices: ModelInfo = {
+            ~~~~~~~~~~~~~~~~~~
+
+
+Found 219 errors in 31 files.
+
+Errors  Files
+     1  src/api/index.ts:55
+     1  src/api/providers/__tests__/glama.test.ts:215
+     5  src/api/providers/__tests__/lmstudio.test.ts:73
+     5  src/api/providers/__tests__/ollama.test.ts:73
+     2  src/api/providers/anthropic.ts:172
+     3  src/api/providers/bedrock.ts:208
+     2  src/api/providers/gemini.ts:52
+     1  src/api/providers/lmstudio.ts:52
+     2  src/api/providers/mistral.ts:31
+     1  src/api/providers/ollama.ts:45
+     2  src/api/providers/openai-native.ts:87
+     2  src/api/providers/vertex.ts:82
+     1  src/api/providers/vscode-lm.ts:493
+     1  src/core/__tests__/Cline.test.ts:686
+   101  src/core/Cline.ts:33
+     7  src/core/config/__tests__/ConfigManager.test.ts:90
+     2  src/core/config/ConfigManager.ts:184
+     1  src/core/webview/__tests__/ClineProvider.test.ts:277
+    14  src/core/webview/ClineProvider.ts:13
+     4  src/exports/index.ts:23
+     1  src/integrations/workspace/WorkspaceTracker.ts:64
+     1  src/services/browser/BrowserSession.ts:10
+     1  src/services/mcp/McpHub.ts:460
+     1  src/shared/__tests__/checkExistApiConfig.test.ts:47
+    39  src/shared/api.ts:117
+     2  src/shared/checkExistApiConfig.ts:12
+     4  src/shared/combineApiRequests.ts:25
+     7  src/shared/combineCommandSequences.ts:28
+     1  src/shared/getApiMetrics.ts:38
+     2  src/shared/validation.ts:150
+     2  src/utils/__tests__/cost.test.ts:6

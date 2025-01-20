@@ -38,9 +38,7 @@ export interface ApiHandlerOptions {
 	openAiBaseUrl?: string
 	openAiApiKey?: string
 	openAiModelId?: string
-	ollamaModelId?: string
 	ollamaBaseUrl?: string
-	lmStudioModelId?: string
 	lmStudioBaseUrl?: string
 	geminiApiKey?: string
 	openAiNativeApiKey?: string
@@ -55,6 +53,11 @@ export interface ApiHandlerOptions {
 	includeMaxTokens?: boolean
 }
 
+export interface ApiHandler {
+	getModel(modelId: string): Promise<ModelInfo>
+	getModels(): Promise<string[]>
+}
+
 export type ApiConfiguration = ApiHandlerOptions & {
 	apiProvider?: ApiProvider
 	id?: string // stable unique identifier
@@ -63,13 +66,16 @@ export type ApiConfiguration = ApiHandlerOptions & {
 // Models
 
 export interface ModelInfo {
-	maxTokens?: number
+	id: string
+	name: string
+	provider: ApiProvider
+	maxTokens: number
 	contextWindow: number
-	supportsImages?: boolean
+	supportsImages: boolean
 	supportsComputerUse?: boolean
-	supportsPromptCache: boolean // this value is hardcoded for now
-	inputPrice?: number
-	outputPrice?: number
+	supportsPromptCache?: boolean
+	inputPrice: number
+	outputPrice: number
 	cacheWritesPrice?: number
 	cacheReadsPrice?: number
 	description?: string
@@ -81,20 +87,27 @@ export type AnthropicModelId = keyof typeof anthropicModels
 export const anthropicDefaultModelId: AnthropicModelId = "claude-3-5-sonnet-20241022"
 export const anthropicModels = {
 	"claude-3-5-sonnet-20241022": {
+		id: "claude-3-5-sonnet-20241022",
+		name: "Claude 3.5 Sonnet",
+		provider: "anthropic",
 		maxTokens: 8192,
 		contextWindow: 200_000,
 		supportsImages: true,
 		supportsComputerUse: true,
 		supportsPromptCache: true,
-		inputPrice: 3.0, // $3 per million input tokens
-		outputPrice: 15.0, // $15 per million output tokens
-		cacheWritesPrice: 3.75, // $3.75 per million tokens
-		cacheReadsPrice: 0.3, // $0.30 per million tokens
+		inputPrice: 3.0,
+		outputPrice: 15.0,
+		cacheWritesPrice: 3.75,
+		cacheReadsPrice: 0.3,
 	},
 	"claude-3-5-haiku-20241022": {
+		id: "claude-3-5-haiku-20241022",
+		name: "Claude 3.5 Haiku",
+		provider: "anthropic",
 		maxTokens: 8192,
 		contextWindow: 200_000,
 		supportsImages: false,
+		supportsComputerUse: false,
 		supportsPromptCache: true,
 		inputPrice: 1.0,
 		outputPrice: 5.0,
@@ -358,6 +371,9 @@ export type VertexModelId = keyof typeof vertexModels
 export const vertexDefaultModelId: VertexModelId = "claude-3-5-sonnet-v2@20241022"
 export const vertexModels = {
 	"claude-3-5-sonnet-v2@20241022": {
+		id: "claude-3-5-sonnet-v2@20241022",
+		name: "Claude 3.5 Sonnet V2",
+		provider: "vertex",
 		maxTokens: 8192,
 		contextWindow: 200_000,
 		supportsImages: true,
@@ -415,9 +431,13 @@ export type GeminiModelId = keyof typeof geminiModels
 export const geminiDefaultModelId: GeminiModelId = "gemini-2.0-flash-thinking-exp-1219"
 export const geminiModels = {
 	"gemini-2.0-flash-thinking-exp-1219": {
+		id: "gemini-2.0-flash-thinking-exp-1219",
+		name: "Gemini 2.0 Flash Thinking",
+		provider: "gemini",
 		maxTokens: 8192,
 		contextWindow: 32_767,
 		supportsImages: true,
+		supportsComputerUse: false,
 		supportsPromptCache: false,
 		inputPrice: 0,
 		outputPrice: 0,
@@ -534,12 +554,16 @@ export type DeepSeekModelId = keyof typeof deepSeekModels
 export const deepSeekDefaultModelId: DeepSeekModelId = "deepseek-chat"
 export const deepSeekModels = {
 	"deepseek-chat": {
+		id: "deepseek-chat",
+		name: "DeepSeek Chat",
+		provider: "deepseek",
 		maxTokens: 8192,
 		contextWindow: 64_000,
 		supportsImages: false,
+		supportsComputerUse: false,
 		supportsPromptCache: false,
-		inputPrice: 0.014, // $0.014 per million tokens
-		outputPrice: 0.28, // $0.28 per million tokens
+		inputPrice: 0.014,
+		outputPrice: 0.28,
 		description: `DeepSeek-V3 achieves a significant breakthrough in inference speed over previous models. It tops the leaderboard among open-source models and rivals the most advanced closed-source models globally.`,
 	},
 } as const satisfies Record<string, ModelInfo>
@@ -555,11 +579,72 @@ export type MistralModelId = keyof typeof mistralModels
 export const mistralDefaultModelId: MistralModelId = "codestral-latest"
 export const mistralModels = {
 	"codestral-latest": {
+		id: "codestral-latest",
+		name: "Codestral Latest",
+		provider: "mistral",
 		maxTokens: 32_768,
 		contextWindow: 256_000,
 		supportsImages: false,
+		supportsComputerUse: false,
 		supportsPromptCache: false,
 		inputPrice: 0.3,
 		outputPrice: 0.9,
 	},
 } as const satisfies Record<string, ModelInfo>
+
+// Model info implementations
+export const models: Record<string, ModelInfo> = {
+	"gpt-4": {
+		id: "gpt-4",
+		name: "GPT-4",
+		provider: "openai",
+		maxTokens: 8192,
+		contextWindow: 200000,
+		supportsImages: true,
+		supportsComputerUse: true,
+		supportsPromptCache: true,
+		inputPrice: 3,
+		outputPrice: 15,
+		cacheWritesPrice: 3.75,
+		cacheReadsPrice: 0.3,
+	},
+	"gpt-3.5-turbo": {
+		id: "gpt-3.5-turbo",
+		name: "GPT-3.5 Turbo",
+		provider: "openai",
+		maxTokens: 4096,
+		contextWindow: 200000,
+		supportsImages: false,
+		supportsPromptCache: true,
+		inputPrice: 1,
+		outputPrice: 5,
+		cacheWritesPrice: 1.25,
+		cacheReadsPrice: 0.1,
+	},
+	"claude-3-opus": {
+		id: "claude-3-opus",
+		name: "Claude 3 Opus",
+		provider: "anthropic",
+		maxTokens: 4096,
+		contextWindow: 200000,
+		supportsImages: true,
+		supportsPromptCache: true,
+		inputPrice: 15,
+		outputPrice: 75,
+		cacheWritesPrice: 18.75,
+		cacheReadsPrice: 1.5,
+	},
+	"claude-3-sonnet": {
+		id: "claude-3-sonnet",
+		name: "Claude 3 Sonnet",
+		provider: "anthropic",
+		maxTokens: 4096,
+		contextWindow: 200000,
+		supportsImages: true,
+		supportsPromptCache: true,
+		inputPrice: 3,
+		outputPrice: 15,
+		cacheWritesPrice: 3.75,
+		cacheReadsPrice: 0.3,
+	},
+} as const

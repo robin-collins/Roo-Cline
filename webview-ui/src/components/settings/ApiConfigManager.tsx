@@ -1,216 +1,129 @@
-import { VSCodeButton, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
-import { memo, useEffect, useRef, useState } from "react"
+import { memo, useState } from "react"
 import { ApiConfigMeta } from "../../../../src/shared/ExtensionMessage"
+import { ApiConfiguration } from "../../../../src/shared/api"
 
 interface ApiConfigManagerProps {
-	currentApiConfigName?: string
-	listApiConfigMeta?: ApiConfigMeta[]
+	listApiConfigMeta: ApiConfigMeta[]
+	apiConfiguration: ApiConfiguration
 	onSelectConfig: (configName: string) => void
 	onDeleteConfig: (configName: string) => void
 	onRenameConfig: (oldName: string, newName: string) => void
-	onUpsertConfig: (configName: string) => void
+	onUpdateConfig: (config: ApiConfiguration) => void
+	onSaveConfig: (configName: string, config: ApiConfiguration) => void
 }
 
-const ApiConfigManager = ({
-	currentApiConfigName = "",
-	listApiConfigMeta = [],
+const ApiConfigManager: React.FC<ApiConfigManagerProps> = ({
+	listApiConfigMeta,
+	apiConfiguration,
 	onSelectConfig,
 	onDeleteConfig,
 	onRenameConfig,
-	onUpsertConfig,
-}: ApiConfigManagerProps) => {
-	const [editState, setEditState] = useState<"new" | "rename" | null>(null)
-	const [inputValue, setInputValue] = useState("")
-	const inputRef = useRef<HTMLInputElement>()
+	onUpdateConfig,
+	onSaveConfig,
+}) => {
+	const [isAdding, setIsAdding] = useState(false)
+	const [isRenaming, setIsRenaming] = useState(false)
+	const [newConfigName, setNewConfigName] = useState("")
+	const [selectedConfigName, setSelectedConfigName] = useState("")
+	const [isSwitching, setIsSwitching] = useState(false)
 
-	// Focus input when entering edit mode
-	useEffect(() => {
-		if (editState) {
-			setTimeout(() => inputRef.current?.focus(), 0)
+	const handleAdd = async () => {
+		if (!newConfigName) return
+		const validation = await validateProfileName(newConfigName, listApiConfigMeta)
+		if (validation.isValid) {
+			onSaveConfig(newConfigName, apiConfiguration)
+			setNewConfigName("")
+			setIsAdding(false)
 		}
-	}, [editState])
-
-	// Reset edit state when current profile changes
-	useEffect(() => {
-		setEditState(null)
-		setInputValue("")
-	}, [currentApiConfigName])
-
-	const handleAdd = () => {
-		const newConfigName = currentApiConfigName + " (copy)"
-		onUpsertConfig(newConfigName)
 	}
 
-	const handleStartRename = () => {
-		setEditState("rename")
-		setInputValue(currentApiConfigName || "")
-	}
-
-	const handleCancel = () => {
-		setEditState(null)
-		setInputValue("")
-	}
-
-	const handleSave = () => {
-		const trimmedValue = inputValue.trim()
-		if (!trimmedValue) return
-
-		if (editState === "new") {
-			onUpsertConfig(trimmedValue)
-		} else if (editState === "rename" && currentApiConfigName) {
-			onRenameConfig(currentApiConfigName, trimmedValue)
+	const handleRename = async (oldName: string, newName: string) => {
+		if (!newName) return
+		const validation = await validateProfileName(newName, listApiConfigMeta, oldName)
+		if (validation.isValid) {
+			onRenameConfig(oldName, newName)
+			setIsRenaming(false)
 		}
-
-		setEditState(null)
-		setInputValue("")
 	}
 
-	const handleDelete = () => {
-		if (!currentApiConfigName || !listApiConfigMeta || listApiConfigMeta.length <= 1) return
-
-		// Let the extension handle both deletion and selection
-		onDeleteConfig(currentApiConfigName)
+	const handleSelectConfig = async (configName: string) => {
+		const validation = await validateProfileTransition(apiConfiguration, configName)
+		if (validation.isValid) {
+			setIsSwitching(true)
+			onSelectConfig(configName)
+			setSelectedConfigName(configName)
+			setIsSwitching(false)
+		}
 	}
-
-	const isOnlyProfile = listApiConfigMeta?.length === 1
 
 	return (
-		<div style={{ marginBottom: 5 }}>
-			<div
-				style={{
-					display: "flex",
-					flexDirection: "column",
-					gap: "2px",
-				}}>
-				<label htmlFor="config-profile">
-					<span style={{ fontWeight: "500" }}>Configuration Profile</span>
-				</label>
-
-				{editState ? (
-					<div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
-						<VSCodeTextField
-							ref={inputRef as any}
-							value={inputValue}
-							onInput={(e: any) => setInputValue(e.target.value)}
-							placeholder={editState === "new" ? "Enter profile name" : "Enter new name"}
-							style={{ flexGrow: 1 }}
-							onKeyDown={(e: any) => {
-								if (e.key === "Enter" && inputValue.trim()) {
-									handleSave()
-								} else if (e.key === "Escape") {
-									handleCancel()
-								}
-							}}
-						/>
-						<VSCodeButton
-							appearance="icon"
-							disabled={!inputValue.trim()}
-							onClick={handleSave}
-							title="Save"
-							style={{
-								padding: 0,
-								margin: 0,
-								height: "28px",
-								width: "28px",
-								minWidth: "28px",
-							}}>
-							<span className="codicon codicon-check" />
-						</VSCodeButton>
-						<VSCodeButton
-							appearance="icon"
-							onClick={handleCancel}
-							title="Cancel"
-							style={{
-								padding: 0,
-								margin: 0,
-								height: "28px",
-								width: "28px",
-								minWidth: "28px",
-							}}>
-							<span className="codicon codicon-close" />
-						</VSCodeButton>
-					</div>
-				) : (
-					<>
-						<div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
-							<select
-								id="config-profile"
-								value={currentApiConfigName}
-								onChange={(e) => onSelectConfig(e.target.value)}
-								style={{
-									flexGrow: 1,
-									padding: "4px 8px",
-									paddingRight: "24px",
-									backgroundColor: "var(--vscode-dropdown-background)",
-									color: "var(--vscode-dropdown-foreground)",
-									border: "1px solid var(--vscode-dropdown-border)",
-									borderRadius: "2px",
-									height: "28px",
-									cursor: "pointer",
-									outline: "none",
-								}}>
-								{listApiConfigMeta?.map((config) => (
-									<option key={config.name} value={config.name}>
-										{config.name}
-									</option>
-								))}
-							</select>
-							<VSCodeButton
-								appearance="icon"
-								onClick={handleAdd}
-								title="Add profile"
-								style={{
-									padding: 0,
-									margin: 0,
-									height: "28px",
-									width: "28px",
-									minWidth: "28px",
-								}}>
-								<span className="codicon codicon-add" />
-							</VSCodeButton>
-							{currentApiConfigName && (
-								<>
-									<VSCodeButton
-										appearance="icon"
-										onClick={handleStartRename}
-										title="Rename profile"
-										style={{
-											padding: 0,
-											margin: 0,
-											height: "28px",
-											width: "28px",
-											minWidth: "28px",
-										}}>
-										<span className="codicon codicon-edit" />
-									</VSCodeButton>
-									<VSCodeButton
-										appearance="icon"
-										onClick={handleDelete}
-										title={isOnlyProfile ? "Cannot delete the only profile" : "Delete profile"}
-										disabled={isOnlyProfile}
-										style={{
-											padding: 0,
-											margin: 0,
-											height: "28px",
-											width: "28px",
-											minWidth: "28px",
-										}}>
-										<span className="codicon codicon-trash" />
-									</VSCodeButton>
-								</>
-							)}
+		<div className="api-config-manager">
+			<div className="config-list">
+				{listApiConfigMeta.map((config) => (
+					<div
+						key={config.name}
+						className={`config-item ${selectedConfigName === config.name ? "selected" : ""}`}
+						style={{ opacity: isSwitching ? 0.5 : 1 }}>
+						{isRenaming && selectedConfigName === config.name ? (
+							<input
+								type="text"
+								value={newConfigName}
+								onChange={(e) => setNewConfigName(e.target.value)}
+								onKeyDown={(e) => {
+									if (e.key === "Enter") {
+										handleRename(config.name, newConfigName)
+									}
+								}}
+								autoFocus
+							/>
+						) : (
+							<span onClick={() => handleSelectConfig(config.name)}>{config.name}</span>
+						)}
+						<div className="config-actions">
+							<button
+								onClick={() => {
+									setIsRenaming(true)
+									setSelectedConfigName(config.name)
+									setNewConfigName(config.name)
+								}}
+								disabled={isSwitching}>
+								Rename
+							</button>
+							<button onClick={() => onDeleteConfig(config.name)} disabled={isSwitching}>
+								Delete
+							</button>
 						</div>
-						<p
-							style={{
-								fontSize: "12px",
-								margin: "5px 0 12px",
-								color: "var(--vscode-descriptionForeground)",
-							}}>
-							Save different API configurations to quickly switch between providers and settings
-						</p>
-					</>
-				)}
+					</div>
+				))}
 			</div>
+			{isAdding ? (
+				<div className="add-config">
+					<input
+						type="text"
+						value={newConfigName}
+						onChange={(e) => setNewConfigName(e.target.value)}
+						onKeyDown={(e) => {
+							if (e.key === "Enter") {
+								handleAdd()
+							}
+						}}
+						placeholder="New configuration name"
+						autoFocus
+					/>
+					<button onClick={handleAdd}>Add</button>
+					<button
+						onClick={() => {
+							setIsAdding(false)
+							setNewConfigName("")
+						}}>
+						Cancel
+					</button>
+				</div>
+			) : (
+				<button onClick={() => setIsAdding(true)} disabled={isSwitching}>
+					Add New Configuration
+				</button>
+			)}
 		</div>
 	)
 }
